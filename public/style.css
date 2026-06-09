@@ -156,6 +156,7 @@ button {
 .table-responsive {
     width: 100%;
     overflow-x: auto;
+    overflow-y: visible;
     border: 1px solid var(--border-color);
     border-radius: 10px;
     background: #ffffff;
@@ -229,7 +230,7 @@ input[type="number"]:focus {
 }
 
 /* Column Rules styling */
-.text-col { width: 32%; }
+.text-col { width: 40%; }
 .num-col { width: 11%; text-align: right; }
 th.num-col { text-align: right; }
 
@@ -277,8 +278,18 @@ th.num-col { text-align: right; }
 
 /* --- Optimized Responsive Layout Controls (Media Queries) --- */
 @media screen and (max-width: 768px) {
+    input,
+    select { 
+        font-size: 16px !important;
+    }
     body {
         padding: 15px 10px;
+    }
+
+    .modal-content {
+        width: 98% !important;
+        padding: 15px !important;
+        max-height: 95vh !important;
     }
 
     .container {
@@ -315,6 +326,20 @@ th.num-col { text-align: right; }
     .summary-box {
         width: 100%;
     }
+
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    table {
+        min-width: 1100px;
+    }
+
+    th,
+    td {
+        white-space: nowrap;
+    }
 }
 
 /* Print/PDF layout normalization rule sets */
@@ -329,4 +354,26 @@ th.num-col { text-align: right; }
     font-weight: bold;
     font-size: 16px;
     padding-left: 0;
+}
+
+.ts-wrapper {
+    width: 100%;
+}
+
+.ts-control {
+    min-height: 42px !important;
+    height: 42px !important;
+    overflow: hidden !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+.ts-control input {
+    min-width: 0 !important;
+}
+
+.ts-dropdown {
+    z-index: 99999 !important;
+    max-height: 250px !important;
+    overflow-y: auto !important;
 }
