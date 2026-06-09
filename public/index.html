@@ -141,7 +141,7 @@
 <body>
 
     <div class="container" id="invoiceContainer">
-        <h2>Product Calculator</h2>
+        <h2>HERBAL LIFE</h2>
 
         <div class="customer-info-section"
             style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px; background: #ffffff; padding: 15px 20px; border-radius: 8px; border: 1px solid #e2e8f0;">
@@ -156,10 +156,10 @@
 
             <div class="export-button-group">
                 <button class="btn-export" onclick="saveBillToDatabase()"
-                    style="background-color: #f59e0b; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);">💾 Save
+                    style="background-color: #f59e0b; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);">Save
                     Bill</button>
                 <button class="btn-export" onclick="fetchSavedBills()"
-                    style="background-color: #6366f1; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);">📋 View Saved
+                    style="background-color: #6366f1; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);">View Saved
                     Bills</button>
             </div>
         </div>
@@ -377,13 +377,13 @@
         async function saveBillToDatabase() {
             const customerName = document.getElementById('customerName').value.trim();
             if (!customerName) {
-                alert("⚠️ Please fill out the Customer Name before saving.");
+                alert("Please fill out the Customer Name before saving.");
                 return;
             }
 
             const rows = document.querySelectorAll('.product-row');
             if (rows.length === 0) {
-                alert("⚠️ Cannot save an empty bill.");
+                alert("Cannot save an empty bill.");
                 return;
             }
 
@@ -472,10 +472,10 @@
                     <td style="text-align:center;">
                         <div class="history-actions-cell">
                             <button class="btn-history-download" onclick="downloadSingleHistoryPDF('${professionalInvoiceNum}', '${bill.customer_name.replace(/'/g, "\\'")}', ${JSON.stringify(itemsList).replace(/"/g, '&quot;')}, ${bill.grand_total}, ${bill.total_discount}, ${bill.total_taxable}, ${bill.total_payable}); event.stopPropagation();">
-                                📥 Download
+                                Download
                             </button>
                             <button class="btn-history-delete" onclick="deleteBillFromDatabase(${bill.id}, '${bill.customer_name.replace(/'/g, "\\'")}', '${professionalInvoiceNum}'); event.stopPropagation();">
-                                🗑️ Delete
+                                Delete
                             </button>
                         </div>
                     </td>
@@ -488,7 +488,7 @@
 
                     let itemsTableHTML = `
                     <div class="details-container">
-                        <strong>📦 Granular Products Breakdown:</strong>
+                        <strong> Products Breakdown:</strong>
                         <table class="inner-details-table">
                             <thead>
                                 <tr>
@@ -579,7 +579,7 @@
 
         // --- FRONTEND ACTION TO DELETE A RECORD FROM THE MYSQL DATABASE ---
         async function deleteBillFromDatabase(billId, customerName, displayId) {
-            const confirmDelete = confirm(`⚠️ Are you sure you want to permanently delete the bill ${displayId} for "${customerName}" from the database?`);
+            const confirmDelete = confirm(`Are you sure you want to permanently delete the bill ${displayId} for "${customerName}" from the database?`);
             if (!confirmDelete) return;
 
             try {
@@ -655,7 +655,7 @@
                 </tbody>
             </table>
             <div style="display:flex; justify-content:flex-end;">
-                <div style="width:360px; background:#f8fafc; padding:18px; border-radius:8px; border-top:4px solid #10b981; box-shadow:0 4px 10px rgba(0,0,0,0.03); border-left:1px solid #e2e8f0; border-right:1px solid #e2e8f0; border-bottom:1px solid #e2e8f0;">
+                <div style="width:300px; background:#f8fafc; padding:18px; border-radius:8px; border-top:4px solid #10b981; box-shadow:0 4px 10px rgba(0,0,0,0.03); border-left:1px solid #e2e8f0; border-right:1px solid #e2e8f0; border-bottom:1px solid #e2e8f0;">
                     <div style="display:flex; justify-content:between; font-size:13px; color:#475569; margin-bottom:8px;">
                         <span style="flex-grow:1;">Grand Total (Gross):</span><strong>₹${parseFloat(gross).toFixed(2)}</strong>
                     </div>
@@ -673,12 +673,24 @@
         `;
 
             const opt = {
-                margin: [12, 12, 12, 12],
+                margin: [8, 8, 8, 8],
                 filename: `Invoice_${customerName.replace(/\s+/g, '_')}_${invoiceNum}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+                html2canvas: {
+                    scale: 1.5,
+                    useCORS: true
+                },
+                pagebreak: {
+                    mode: ['avoid-all', 'css', 'legacy']
+                },
+                jsPDF: {
+                    unit: 'mm',
+                    format: 'a4',
+                    orientation: 'landscape'
+                }
             };
+
+            tempDiv.style.width = "1000px";
 
             html2pdf().set(opt).from(tempDiv).save();
         }
