@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Billing Calculator</title>
+    <link rel="stylesheet" href="style.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        /* Styles for the expandable history details */
+        .clickable-bill-row {
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .clickable-bill-row:hover {
+            background-color: #f8fafc !important;
+        }
+        .details-row {
+            background-color: #f1f5f9;
+        }
+        .details-container {
+            padding: 15px 20px;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            margin: 5px 10px 15px 10px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .inner-details-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+        }
+        .inner-details-table th {
+            background-color: #64748b !important;
+            color: white !important;
+            font-size: 12px;
+            padding: 6px 10px;
+            text-align: left;
+        }
+        .inner-details-table td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 13px;
+            color: #334155;
+        }
+        
+        /* --- UPDATED BUTTON LAYOUT FOR HISTORY ACTIONS --- */
+        .btn-history-download {
+            background-color: #7c3aed;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .btn-history-download:hover {
+            background-color: #6d28d9;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 6px rgba(124, 58, 237, 0.2);
+        }
+        .btn-history-delete {
+            background-color: #ef4444;
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .btn-history-delete:hover {
+            background-color: #dc2626;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 6px rgba(239, 68, 68, 0.2);
+        }
+        .history-actions-cell {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px; 
+            padding: 8px;
+        }
+        
+        /* Search Bar styling inside history modal */
+        .history-search-container {
+            margin-bottom: 20px;
+            background: #f8fafc;
+            padding: 12px 18px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .history-search-input {
+            width: 100%;
+            padding: 8px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 14px;
+            color: #1e293b;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+        .history-search-input:focus {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container" id="invoiceContainer">
+    <h2>Product Calculator</h2>
+    
+    <div class="customer-info-section" style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px; background: #ffffff; padding: 15px 20px; border-radius: 8px; border: 1px solid #e2e8f0;">
+        <label for="customerName" style="font-weight: 600; color: #1e293b; font-size: 15px; white-space: nowrap;">Customer Name:</label>
+        <input type="text" id="customerName" placeholder="Enter customer's full name..." autocomplete="off" style="max-width: 400px; background-color: #ffffff;">
+    </div>
+    
+    <div class="action-footer-bar" data-html2pdf-ignore="true">
+        <button class="btn-add" id="addTrackBtn">＋ Add Product</button>
+        
+        <div class="export-button-group">
+            <button class="btn-export" onclick="saveBillToDatabase()" style="background-color: #f59e0b; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);">💾 Save Bill</button>
+            <button class="btn-export" onclick="fetchSavedBills()" style="background-color: #6366f1; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);">📋 View Saved Bills</button>
+        </div>
+    </div>
+    
+    <div class="table-responsive">
+        <table id="productTable">
+            <thead>
+                <tr>
+                    <th class="text-col">Select Product</th>
+                    <th class="num-col">Price (₹)</th>
+                    <th class="num-col">Qty</th>
+                    <th class="num-col">Total</th>
+                    <th class="num-col">35.9% Disc Value</th>
+                    <th class="num-col">Taxable</th>
+                    <th class="num-col">Payable (5%)</th>
+                    <th class="action-header" style="width: 5%; text-align: center;" data-html2pdf-ignore="true">Action</th>
+                </tr>
+            </thead>
+            <tbody id="productRows"></tbody>
+        </table>
+    </div>
+
+    <div class="summary-wrapper">
+        <div class="summary-box">
+            <div class="summary-row">
+                <span>Grand Total (Gross):</span>
+                <span class="display-val">₹<span id="grandTotal">0.00</span></span>
+            </div>
+            <div class="summary-row">
+                <span>Total Discounted Value:</span>
+                <span class="display-val">₹<span id="grandDiscount">0.00</span></span>
+            </div>
+            <div class="summary-row">
+                <span>Total Taxable Amount:</span>
+                <span class="display-val">₹<span id="grandTaxable">0.00</span></span>
+            </div>
+            <div class="summary-row grand-final">
+                <span>Total Payable Amount:</span>
+                <span class="display-val">₹<span id="grandPayable">0.00</span></span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="billsModal" class="modal" style="display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); backdrop-filter: blur(4px); align-items: center; justify-content: center;">
+    <div class="modal-content" style="background-color: white; padding: 30px; border-radius: 12px; width: 92%; max-width: 1200px; max-height: 85vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.2); position: relative;">
+        <span onclick="closeModal()" style="position: absolute; right: 20px; top: 15px; font-size: 28px; font-weight: bold; cursor: pointer; color: #64748b;">&times;</span>
+        <h3 style="margin-top: 0; color: #1e293b; font-size: 22px; padding-bottom: 5px;">Stored Bills History</h3>
+        
+        <div class="history-search-container">
+            <span style="font-size: 16px;">🔍</span>
+            <input type="text" id="modalSearchInput" class="history-search-input" placeholder="Search by customer name or customized invoice number (e.g., INV-1002)..." oninput="filterStoredBills()">
+        </div>
+        
+        <p style="color: #64748b; margin-top: 0; font-size: 14px; margin-bottom: 20px;">💡 Click anywhere on a row to expand detailed item logs. You can independently download or permanently delete customer logs.</p>
+        
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 15%;">Invoice No.</th>
+                        <th style="width: 23%;">Customer Name</th>
+                        <th style="width: 13%;">Gross Total</th>
+                        <th style="width: 13%;">Net Payable</th>
+                        <th style="width: 18%;">Date & Time</th>
+                        <th style="width: 18%; text-align: center;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="savedBillsRows"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<datalist id="productDataset">
+    <option value="1295 - AFRESH ENERGY DRINK MIX - LEMON">
+    <option value="230K - AFRESH ENERGY DRINK MIX - KASHMIRI KAHWA">
+    <option value="1247 - FORMULA 1 NUTRITIONAL SHAKE MIX - VANILLA">
+    <option value="1249 - FORMULA 1 NUTRITIONAL SHAKE MIX - MANGO">
+    <option value="287K - FORMULA 1 NUTRITIONAL SHAKE MIX - PAAN">
+    <option value="406K - FORMULA 1 NUTRITIONAL SHAKE MIX - MANGO FLAVOUR (750 G)">
+    <option value="409K - FORMULA 1 NUTRITIONAL SHAKE MIX - KULFI FLAVOUR (750 G)">
+    <option value="4114 - FORMULA 1 NUTRITIONAL SHAKE MIX - KULFI">
+    <option value="183K - SHAKE MATE">
+    <option value="1279 - DINOSHAKE - CHOCOLICIOUS">
+    <option value="1569 - PERSONALIZED PROTEIN POWDER - 400G">
+    <option value="2865 - ACTIVE FIBER COMPLEX">
+    <option value="0020 - HERBALIFE CALCIUM TABLETS">
+    <option value="0077 - HERBAL CONTROL">
+    <option value="0111 - CELL-U-LOSS">
+    <option value="0555 - JOINT SUPPORT">
+    <option value="1232 - FORMULA 2 MULTIVITAMIN MINERAL & HERBAL TABLETS">
+    <option value="127K - WOMAN'S CHOICE">
+    <option value="1293 - ALOE PLUS">
+    <option value="1458 - HERBALIFE 24 HYDRATE">
+    <option value="3123 - CELL ACTIVATOR">
+</datalist>
+
+<script>
+    const priceLookupMap = {
+        "1295 - AFRESH ENERGY DRINK MIX - LEMON": 773.00,
+        "230K - AFRESH ENERGY DRINK MIX - KASHMIRI KAHWA": 773.00,
+        "1247 - FORMULA 1 NUTRITIONAL SHAKE MIX - VANILLA": 2075.00,
+        "1249 - FORMULA 1 NUTRITIONAL SHAKE MIX - MANGO": 2075.00,
+        "287K - FORMULA 1 NUTRITIONAL SHAKE MIX - PAAN": 2075.00,
+        "406K - FORMULA 1 NUTRITIONAL SHAKE MIX - MANGO FLAVOUR (750 G)": 3073.00,
+        "409K - FORMULA 1 NUTRITIONAL SHAKE MIX - KULFI FLAVOUR (750 G)": 3073.00,
+        "4114 - FORMULA 1 NUTRITIONAL SHAKE MIX - KULFI": 2075.00,
+        "183K - SHAKE MATE": 621.00,
+        "1279 - DINOSHAKE - CHOCOLICIOUS": 1061.00,
+        "1569 - PERSONALIZED PROTEIN POWDER - 400G": 2366.00,
+        "2865 - ACTIVE FIBER COMPLEX": 2437.00,
+        "0020 - HERBALIFE CALCIUM TABLETS": 1145.00,
+        "0077 - HERBAL CONTROL": 3269.00,
+        "0111 - CELL-U-LOSS": 1623.00,
+        "0555 - JOINT SUPPORT": 2338.00,
+        "1232 - FORMULA 2 MULTIVITAMIN MINERAL & HERBAL TABLETS": 1908.00,
+        "127K - WOMAN'S CHOICE": 1185.00,
+        "1293 - ALOE PLUS": 1008.00,
+        "1458 - HERBALIFE 24 HYDRATE": 1558.00,
+        "3123 - CELL ACTIVATOR": 2109.00
+    };
+
+    const productRowsContainer = document.getElementById('productRows');
+    const addTrackBtn = document.getElementById('addTrackBtn');
+
+    const grandTotalEl = document.getElementById('grandTotal');
+    const grandDiscountEl = document.getElementById('grandDiscount');
+    const grandTaxableEl = document.getElementById('grandTaxable');
+    const grandPayableEl = document.getElementById('grandPayable');
+
+    function addNewRow() {
+        const newRow = document.createElement('tr');
+        newRow.className = 'product-row';
+        newRow.innerHTML = `
+            <td>
+                <input type="text" class="prod-search-input" list="productDataset" placeholder="Select or type to filter..." autocomplete="off" onfocus="showDropdown(this)" onclick="showDropdown(this)">
+            </td>
+            <td><input type="number" class="prod-price" placeholder="0.00" min="0" step="0.01"></td>
+            <td><input type="number" class="prod-qty" value="1" min="0" step="1"></td>
+            <td><span class="display-val row-total">₹0.00</span></td>
+            <td><span class="display-val row-discount">₹0.00</span></td>
+            <td><span class="display-val row-taxable">₹0.00</span></td>
+            <td><span class="display-val row-payable">₹0.00</span></td>
+            <td style="text-align: center;" data-html2pdf-ignore="true"><button class="btn-delete" onclick="deleteRow(this)">✕</button></td>
+        `;
+        productRowsContainer.appendChild(newRow);
+        calculateInvoice();
+    }
+
+    function showDropdown(inputElement) {
+        inputElement.setAttribute('data-oldval', inputElement.value);
+        inputElement.value = ''; 
+        const event = new Event('input', { bubbles: true });
+        inputElement.dispatchEvent(event);
+    }
+
+    productRowsContainer.addEventListener('focusout', (e) => {
+        if (e.target.classList.contains('prod-search-input')) {
+            setTimeout(() => {
+                if (e.target.value === "") {
+                    const oldVal = e.target.getAttribute('data-oldval') || "";
+                    e.target.value = oldVal;
+                }
+            }, 200);
+        }
+    });
+
+    function calculateInvoice() {
+        const rows = document.querySelectorAll('.product-row');
+        let aggregateTotal = 0, aggregateDiscount = 0, aggregateTaxable = 0, aggregatePayable = 0;
+
+        rows.forEach(row => {
+            const price = parseFloat(row.querySelector('.prod-price').value) || 0;
+            const qty = parseInt(row.querySelector('.prod-qty').value) || 0;
+
+            const total = price * qty;
+            const discount = (0.359 * total); 
+            const taxable = total - discount;
+            const payable = taxable + (0.05 * taxable);
+
+            aggregateTotal += total;
+            aggregateDiscount += discount;
+            aggregateTaxable += taxable;
+            aggregatePayable += payable;
+
+            row.querySelector('.row-total').textContent = '₹' + total.toFixed(2);
+            row.querySelector('.row-discount').textContent = '₹' + discount.toFixed(2);
+            row.querySelector('.row-taxable').textContent = '₹' + taxable.toFixed(2);
+            row.querySelector('.row-payable').textContent = '₹' + payable.toFixed(2);
+        });
+
+        grandTotalEl.textContent = aggregateTotal.toFixed(2);
+        grandDiscountEl.textContent = aggregateDiscount.toFixed(2);
+        grandTaxableEl.textContent = aggregateTaxable.toFixed(2);
+        grandPayableEl.textContent = aggregatePayable.toFixed(2);
+    }
+
+    productRowsContainer.addEventListener('input', (e) => {
+        if (e.target.classList.contains('prod-search-input')) {
+            const inputValue = e.target.value;
+            if (priceLookupMap[inputValue] !== undefined) {
+                const row = e.target.closest('tr');
+                row.querySelector('.prod-price').value = priceLookupMap[inputValue];
+                e.target.setAttribute('data-oldval', inputValue); 
+                calculateInvoice();
+            }
+        }
+        if (e.target.classList.contains('prod-price') || e.target.classList.contains('prod-qty')) {
+            calculateInvoice();
+        }
+    });
+
+    function deleteRow(buttonElement) {
+        buttonElement.closest('tr').remove();
+        calculateInvoice();
+    }
+
+    async function saveBillToDatabase() {
+        const customerName = document.getElementById('customerName').value.trim();
+        if (!customerName) {
+            alert("⚠️ Please fill out the Customer Name before saving.");
+            return;
+        }
+
+        const rows = document.querySelectorAll('.product-row');
+        if (rows.length === 0) {
+            alert("⚠️ Cannot save an empty bill.");
+            return;
+        }
+
+        const items = [];
+        rows.forEach(row => {
+            const description = row.querySelector('.prod-search-input').value || "Unselected Item";
+            const price = parseFloat(row.querySelector('.prod-price').value) || 0;
+            const qty = parseInt(row.querySelector('.prod-qty').value) || 0;
+            if(price > 0 && qty > 0) {
+                items.push({ description, price, qty });
+            }
+        });
+
+        const billingPayload = {
+            customerName,
+            items,
+            grandTotal: parseFloat(grandTotalEl.textContent),
+            totalDiscount: parseFloat(grandDiscountEl.textContent),
+            totalTaxable: parseFloat(grandTaxableEl.textContent),
+            totalPayable: parseFloat(grandPayableEl.textContent)
+        };
+
+        try {
+            const response = await fetch('http://localhost:3000/api/save-bill', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(billingPayload)
+            });
+
+            const result = await response.json();
+            if (response.ok) {
+                const customDisplayId = `INV-100${result.billId}`;
+                alert(`✅ Invoice saved successfully to MySQL! Bill Reference: ${customDisplayId}`);
+            } else {
+                alert(`❌ Database error: ${result.error}`);
+            }
+        } catch (err) {
+            console.error(err);
+            alert("❌ Connection Refused. Ensure your Node server is running.");
+        }
+    }
+
+    // --- FETCH RECORDS AND BUILD ACCORDION WITH ACTIONS ---
+    async function fetchSavedBills() {
+        try {
+            const response = await fetch('http://localhost:3000/api/get-bills');
+            const bills = await response.json();
+
+            if (!response.ok) {
+                alert("❌ Failed to pull data from backend.");
+                return;
+            }
+
+            document.getElementById('modalSearchInput').value = '';
+
+            const rowsContainer = document.getElementById('savedBillsRows');
+            rowsContainer.innerHTML = ''; 
+
+            if(bills.length === 0) {
+                rowsContainer.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#64748b; padding:20px;">No saved invoices found in database.</td></tr>`;
+            }
+
+            bills.forEach(bill => {
+                let itemsList = [];
+                try {
+                    itemsList = typeof bill.items === 'string' ? JSON.parse(bill.items) : bill.items;
+                } catch(e) {
+                    itemsList = [];
+                }
+
+                const dateFormatted = new Date(bill.created_at).toLocaleString();
+                const professionalInvoiceNum = `INV-100${bill.id}`;
+
+                // 1. Summary Main History Row
+                const mainRow = document.createElement('tr');
+                mainRow.className = 'clickable-bill-row';
+                mainRow.setAttribute('data-customer', bill.customer_name.toLowerCase());
+                mainRow.setAttribute('data-id', professionalInvoiceNum.toLowerCase());
+                
+                mainRow.innerHTML = `
+                    <td style="font-weight:bold; color:#4f46e5;">${professionalInvoiceNum}</td>
+                    <td style="color:#334155; font-weight:500;">👤 ${bill.customer_name}</td>
+                    <td class="display-val">₹${parseFloat(bill.grand_total).toFixed(2)}</td>
+                    <td class="display-val" style="color:#10b981; font-weight:600;">₹${parseFloat(bill.total_payable).toFixed(2)}</td>
+                    <td style="color:#64748b; font-size:13px;">${dateFormatted} 🔽</td>
+                    <td style="text-align:center;">
+                        <div class="history-actions-cell">
+                            <button class="btn-history-download" onclick="downloadSingleHistoryPDF('${professionalInvoiceNum}', '${bill.customer_name.replace(/'/g, "\\'")}', ${JSON.stringify(itemsList).replace(/"/g, '&quot;')}, ${bill.grand_total}, ${bill.total_discount}, ${bill.total_taxable}, ${bill.total_payable}); event.stopPropagation();">
+                                📥 Download
+                            </button>
+                            <button class="btn-history-delete" onclick="deleteBillFromDatabase(${bill.id}, '${bill.customer_name.replace(/'/g, "\\'")}', '${professionalInvoiceNum}'); event.stopPropagation();">
+                                🗑️ Delete
+                            </button>
+                        </div>
+                    </td>
+                `;
+
+                // 2. Dropdown Itemized Breakdown Container 
+                const detailsRow = document.createElement('tr');
+                detailsRow.className = 'details-row';
+                detailsRow.style.display = 'none';
+                
+                let itemsTableHTML = `
+                    <div class="details-container">
+                        <strong>📦 Granular Products Breakdown:</strong>
+                        <table class="inner-details-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 35%;">Product Name</th>
+                                    <th style="width: 10%; text-align: right;">Price (₹)</th>
+                                    <th style="width: 5%; text-align: center;">Qty</th>
+                                    <th style="width: 12%; text-align: right;">Total</th>
+                                    <th style="width: 13%; text-align: right;">35.9% Disc</th>
+                                    <th style="width: 12%; text-align: right;">Taxable</th>
+                                    <th style="width: 13%; text-align: right;">Payable (5%)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+                
+                itemsList.forEach(item => {
+                    const total = item.price * item.qty;
+                    const discount = total * 0.359;
+                    const taxable = total - discount;
+                    const payable = taxable * 1.05;
+
+                    itemsTableHTML += `
+                        <tr>
+                            <td style="font-weight: 500;">${item.description}</td>
+                            <td style="text-align: right;">₹${parseFloat(item.price).toFixed(2)}</td>
+                            <td style="text-align: center; font-weight: 600;">${item.qty}</td>
+                            <td style="text-align: right;">₹${total.toFixed(2)}</td>
+                            <td style="text-align: right; color: #dc2626;">₹${discount.toFixed(2)}</td>
+                            <td style="text-align: right;">₹${taxable.toFixed(2)}</td>
+                            <td style="text-align: right; font-weight: 600; color: #059669;">₹${payable.toFixed(2)}</td>
+                        </tr>
+                    `;
+                });
+
+                itemsTableHTML += `
+                            </tbody>
+                        </table>
+                        <div style="margin-top: 12px; display: flex; justify-content: flex-end; gap: 25px; font-size: 13px; color: #1e293b; background: #f8fafc; padding: 10px; border-radius: 4px; border: 1px solid #e2e8f0;">
+                            <span><strong>Gross Total:</strong> ₹${parseFloat(bill.grand_total).toFixed(2)}</span>
+                            <span style="color: #dc2626;"><strong>Total Saved:</strong> ₹${parseFloat(bill.total_discount).toFixed(2)}</span>
+                            <span><strong>Taxable Basis:</strong> ₹${parseFloat(bill.total_taxable).toFixed(2)}</span>
+                            <span style="color: #10b981;"><strong>Net Payable:</strong> ₹${parseFloat(bill.total_payable).toFixed(2)}</span>
+                        </div>
+                    </div>
+                `;
+
+                detailsRow.innerHTML = `<td colspan="6" style="padding: 0;">${itemsTableHTML}</td>`;
+
+                // Main Accordion Click Toggle
+                mainRow.addEventListener('click', () => {
+                    const isHidden = detailsRow.style.display === 'none';
+                    detailsRow.style.display = isHidden ? 'table-row' : 'none';
+                    mainRow.style.backgroundColor = isHidden ? '#f1f5f9' : '';
+                });
+
+                rowsContainer.appendChild(mainRow);
+                rowsContainer.appendChild(detailsRow);
+            });
+
+            document.getElementById('billsModal').style.display = 'flex';
+
+        } catch (err) {
+            console.error(err);
+            alert("❌ Network Error. Ensure your backend Node server is running.");
+        }
+    }
+
+    // --- CLIENT-SIDE SEARCH FILTER ALGORITHM ---
+    function filterStoredBills() {
+        const query = document.getElementById('modalSearchInput').value.toLowerCase().trim();
+        const mainRows = document.querySelectorAll('.clickable-bill-row');
+
+        mainRows.forEach(row => {
+            const customerData = row.getAttribute('data-customer') || "";
+            const idData = row.getAttribute('data-id') || "";
+            const detailsRow = row.nextElementSibling; 
+
+            if (customerData.includes(query) || idData.includes(query)) {
+                row.style.display = 'table-row';
+            } else {
+                row.style.display = 'none';
+                if (detailsRow && detailsRow.classList.contains('details-row')) {
+                    detailsRow.style.display = 'none';
+                }
+            }
+        });
+    }
+
+    // --- FRONTEND ACTION TO DELETE A RECORD FROM THE MYSQL DATABASE ---
+    async function deleteBillFromDatabase(billId, customerName, displayId) {
+        const confirmDelete = confirm(`⚠️ Are you sure you want to permanently delete the bill ${displayId} for "${customerName}" from the database?`);
+        if (!confirmDelete) return;
+
+        try {
+            const response = await fetch(`http://localhost:3000/api/delete-bill/${billId}`, {
+                method: 'DELETE'
+            });
+
+            const result = await response.json();
+            if (response.ok) {
+                alert(`✅ Record ${displayId} deleted successfully.`);
+                fetchSavedBills(); 
+            } else {
+                alert(`❌ Database error: ${result.error}`);
+            }
+        } catch (err) {
+            console.error(err);
+            alert("❌ Connection Refused. Ensure your Node server is running.");
+        }
+    }
+
+    function closeModal() {
+        document.getElementById('billsModal').style.display = 'none';
+    }
+
+    // --- GENERATES SECURE EXPORT COMPLIANT ISOLATED CUSTOMER INVOICES ---
+    function downloadSingleHistoryPDF(invoiceNum, customerName, items, gross, discount, taxable, payable) {
+        const tempDiv = document.createElement('div');
+        tempDiv.style.padding = '35px';
+        tempDiv.style.backgroundColor = '#ffffff';
+        tempDiv.style.fontFamily = "'Segoe UI', system-ui, sans-serif";
+        
+        let tableRowsHTML = '';
+        items.forEach(item => {
+            const total = item.price * item.qty;
+            const discVal = total * 0.359;
+            const taxAmt = total - discVal;
+            const netPay = taxAmt * 1.05;
+            tableRowsHTML += `
+                <tr>
+                    <td style="padding:10px; border-bottom:1px solid #e2e8f0; font-size:12px; font-weight:500;">${item.description}</td>
+                    <td style="padding:10px; border-bottom:1px solid #e2e8f0; text-align:right; font-size:12px;">₹${parseFloat(item.price).toFixed(2)}</td>
+                    <td style="padding:10px; border-bottom:1px solid #e2e8f0; text-align:center; font-size:12px; font-weight:600;">${item.qty}</td>
+                    <td style="padding:10px; border-bottom:1px solid #e2e8f0; text-align:right; font-size:12px;">₹${total.toFixed(2)}</td>
+                    <td style="padding:10px; border-bottom:1px solid #e2e8f0; text-align:right; font-size:12px; color:#dc2626;">₹${discVal.toFixed(2)}</td>
+                    <td style="padding:10px; border-bottom:1px solid #e2e8f0; text-align:right; font-size:12px;">₹${taxAmt.toFixed(2)}</td>
+                    <td style="padding:10px; border-bottom:1px solid #e2e8f0; text-align:right; font-size:12px; font-weight:600; color:#059669;">₹${netPay.toFixed(2)}</td>
+                </tr>
+            `;
+        });
+
+        tempDiv.innerHTML = `
+            <div style="text-align:center; border-bottom:2px solid #1e293b; padding-bottom:15px; margin-bottom:20px;">
+                <h2 style="margin:0; color:#1e293b; font-size:24px; letter-spacing:0.5px;">PRODUCT BILLING INVOICE</h2>
+                <p style="margin:5px 0 0 0; color:#64748b; font-size:13px;">Invoice Number: ${invoiceNum}</p>
+            </div>
+            <div style="margin-bottom:25px; font-size:14px; background:#f8fafc; padding:15px; border-radius:6px; border:1px solid #e2e8f0; color:#1e293b;">
+                <strong>Customer Name:</strong> ${customerName}
+            </div>
+            <table style="width:100%; border-collapse:collapse; margin-bottom:25px;">
+                <thead>
+                    <tr style="background-color:#1e293b; color:#ffffff; font-size:11px; text-transform:uppercase;">
+                        <th style="padding:12px 10px; text-align:left;">Product Description</th>
+                        <th style="padding:12px 10px; text-align:right;">Price</th>
+                        <th style="padding:12px 10px; text-align:center;">Qty</th>
+                        <th style="padding:12px 10px; text-align:right;">Total</th>
+                        <th style="padding:12px 10px; text-align:right;">35.9% Disc</th>
+                        <th style="padding:12px 10px; text-align:right;">Taxable</th>
+                        <th style="padding:12px 10px; text-align:right;">Payable (5%)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${tableRowsHTML}
+                </tbody>
+            </table>
+            <div style="display:flex; justify-content:flex-end;">
+                <div style="width:360px; background:#f8fafc; padding:18px; border-radius:8px; border-top:4px solid #10b981; box-shadow:0 4px 10px rgba(0,0,0,0.03); border-left:1px solid #e2e8f0; border-right:1px solid #e2e8f0; border-bottom:1px solid #e2e8f0;">
+                    <div style="display:flex; justify-content:between; font-size:13px; color:#475569; margin-bottom:8px;">
+                        <span style="flex-grow:1;">Grand Total (Gross):</span><strong>₹${parseFloat(gross).toFixed(2)}</strong>
+                    </div>
+                    <div style="display:flex; justify-content:between; font-size:13px; color:#dc2626; margin-bottom:8px;">
+                        <span style="flex-grow:1;">Total Discounted Value:</span><strong>₹${parseFloat(discount).toFixed(2)}</strong>
+                    </div>
+                    <div style="display:flex; justify-content:between; font-size:13px; color:#475569; margin-bottom:8px;">
+                        <span style="flex-grow:1;">Total Taxable Amount:</span><strong>₹${parseFloat(taxable).toFixed(2)}</strong>
+                    </div>
+                    <div style="display:flex; justify-content:between; font-size:16px; color:#1e293b; font-weight:700; border-top:1px dashed #cbd5e1; padding-top:12px; margin-top:12px;">
+                        <span style="flex-grow:1;">Total Payable Amount:</span><span style="color:#059669; font-size:18px;">₹${parseFloat(payable).toFixed(2)}</span>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        const opt = {
+            margin:       [12, 12, 12, 12],
+            filename:     `Invoice_${customerName.replace(/\s+/g, '_')}_${invoiceNum}.pdf`,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, useCORS: true },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'landscape' }
+        };
+
+        html2pdf().set(opt).from(tempDiv).save();
+    }
+
+    addTrackBtn.addEventListener('click', addNewRow);
+    addNewRow();
+</script>
+</body>
+</html>
