@@ -416,13 +416,26 @@
                 const result = await response.json();
                 if (response.ok) {
                     const customDisplayId = `INV-100${result.billId}`;
-                    alert(`✅ Invoice saved successfully to MySQL! Bill Reference: ${customDisplayId}`);
-                } else {
-                    alert(`❌ Database error: ${result.error}`);
+                    alert(`Invoice saved successfully to MySQL! Bill Reference: ${customDisplayId}`);
+
+                    // Clear customer name
+                    document.getElementById('customerName').value = '';
+
+                    // Remove all product rows
+                    productRowsContainer.innerHTML = '';
+
+                    // Add one fresh empty row
+                    addNewRow();
+
+                    // Reset summary values
+                    calculateInvoice();
+                }
+                else {
+                    alert(`Database error: ${result.error}`);
                 }
             } catch (err) {
                 console.error(err);
-                alert("❌ Connection Refused. Ensure your Node server is running.");
+                alert("Connection Refused. Ensure your Node server is running.");
             }
         }
 
@@ -433,7 +446,7 @@
                 const bills = await response.json();
 
                 if (!response.ok) {
-                    alert("❌ Failed to pull data from backend.");
+                    alert("Failed to pull data from backend.");
                     return;
                 }
 
@@ -589,7 +602,7 @@
 
                 const result = await response.json();
                 if (response.ok) {
-                    alert(`Record ${displayId} deleted successfully.`);
+                    alert(`✅ Record ${displayId} deleted successfully.`);
                     fetchSavedBills();
                 } else {
                     alert(`❌ Database error: ${result.error}`);
