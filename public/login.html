@@ -1,279 +1,300 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Authentication Login Page</title>
-
+    <title>Login & Register</title>
     <style>
-        body {
-            font-family: 'Segoe UI', sans-serif;
-            background: #f4f6f9;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
 
-        .login-container {
-            background: white;
-            padding: 30px;
-            width: 350px;
-            border-radius: 12px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
-        }
-
-        .login-container h2 {
-            text-align: center;
-            margin-bottom: 25px;
-            color: #1e293b;
-        }
-
-        input {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 12px;
-            border: 1px solid #d1d5db;
-            border-radius: 8px;
+        /* Global Box-Sizing Reset */
+        *, *::before, *::after {
             box-sizing: border-box;
         }
 
-        .btn-group {
+        /* Dynamic Cosmic Background */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0b0f19; /* Deep premium dark space */
             display: flex;
-            gap: 10px;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* Changed from height to min-height for mobile keyboards */
+            margin: 0;
+            padding: 24px; /* Keeps the card from hitting screen edges on mobile */
+            overflow-x: hidden; /* Prevents background blobs from creating horizontal scrollbars */
+            overflow-y: auto; /* Allows scrolling if the mobile keyboard occupies space */
+            position: relative;
+        }
+
+        /* Animated Mesh Blobs */
+        .bg-aurora {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+            pointer-events: none; /* Ensures blobs don't interfere with clicks */
+        }
+
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.3;
+            mix-blend-mode: screen;
+            animation: floatAround 25s infinite alternate ease-in-out;
+        }
+
+        .blob-1 {
+            width: 400px;
+            height: 400px;
+            background: #3b82f6; /* Electric Blue */
+            top: -10%;
+            left: -10%;
+        }
+
+        .blob-2 {
+            width: 500px;
+            height: 500px;
+            background: #a855f7; /* Deep Purple */
+            bottom: -15%;
+            right: -10%;
+            animation-duration: 30s;
+            animation-delay: -5s;
+        }
+
+        .blob-3 {
+            width: 350px;
+            height: 350px;
+            background: #06b6d4; /* Vivid Cyan */
+            top: 30%;
+            left: 30%;
+            animation-duration: 20s;
+            animation-delay: -2s;
+        }
+
+        @keyframes floatAround {
+            0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+            50% { transform: translate(50px, 40px) scale(1.1) rotate(180deg); }
+            100% { transform: translate(-30px, 80px) scale(0.9) rotate(360deg); }
+        }
+
+        /* Fluid Responsive Glassmorphic Cards */
+        .login-container, .modal-content {
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 35px 24px; /* Tighter padding optimized for mobile reading */
+            width: 100%; 
+            max-width: 360px; /* Scales dynamically on mobile, caps size on desktop */
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.5);
+        }
+
+        .login-container {
+            animation: cardPop 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes cardPop {
+            from { opacity: 0; transform: translateY(20px) scale(0.97); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        h2 {
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 25px;
+            color: #ffffff;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        /* Input Fields */
+        input {
+            width: 100%;
+            padding: 14px 16px;
+            margin-bottom: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 12px;
+            transition: all 0.25s ease;
+            outline: none;
+            font-family: inherit;
+            color: #ffffff;
+            font-size: 15px; /* 15px+ prevents iOS Safari from forcing an unwanted zoom-in effect */
+        }
+
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        input:focus {
+            border-color: #3b82f6;
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+        }
+
+        /* Button Infrastructure */
+        .btn-group, .modal-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 8px;
         }
 
         button {
             flex: 1;
-            padding: 12px;
+            padding: 14px;
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
             cursor: pointer;
             font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: inherit;
         }
 
-        .login-btn {
-            background: #2563eb;
-            color: white;
-        }
+        button:active { transform: scale(0.97); }
 
-        .register-btn {
-            background: #10b981;
-            color: white;
-        }
+        /* Button Variations */
+        .login-btn { background: #3b82f6; color: white; }
+        .login-btn:hover { background: #2563eb; box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3); }
 
+        .register-btn { 
+            background: rgba(255, 255, 255, 0.08); 
+            color: #f3f4f6; 
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .register-btn:hover { background: rgba(255, 255, 255, 0.15); }
+
+        .create-btn { background: #10b981; color: white; }
+        .create-btn:hover { background: #059669; box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3); }
+
+        .cancel-btn { 
+            background: rgba(239, 68, 68, 0.12); 
+            color: #f87171; 
+            border: 1px solid rgba(239, 68, 68, 0.2); 
+        }
+        .cancel-btn:hover { background: rgba(239, 68, 68, 0.22); }
+
+        /* Modal Overlay & Constraints */
         .modal {
             display: none;
             position: fixed;
             inset: 0;
             background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
             justify-content: center;
             align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 100;
+            padding: 20px; /* Guardrails to prevent modal breaking on short mobile displays */
         }
 
         .modal-content {
-            background: white;
-            padding: 25px;
-            width: 400px;
-            border-radius: 12px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            max-height: 90vh; /* Safety threshold for tiny mobile devices */
+            overflow-y: auto; /* Activates inner scrolling if options spill out */
         }
 
-        .modal-content h2 {
-            margin-top: 0;
-            text-align: center;
-            color: #1e293b;
-        }
-
-        .modal-buttons {
-            display: flex;
-            gap: 10px;
-        }
-
-        .create-btn {
-            background: #10b981;
-            color: white;
-        }
-
-        .cancel-btn {
-            background: #ef4444;
-            color: white;
-        }
+        .modal.show { opacity: 1; }
+        .modal.show .modal-content { transform: scale(1); }
     </style>
 </head>
 
 <body>
 
-    <div class="login-container">
-
-        <h2>Login</h2>
-
-        <form id="loginForm">
-            <input type="text" id="username" placeholder="Username" required>
-
-            <input type="password" id="password" placeholder="Password" required>
-
-            <div class="btn-group">
-                <button type="submit" class="login-btn">
-                    Login
-                </button>
-
-                <button type="button"
-                    class="register-btn"
-                    onclick="openRegisterModal()">
-                    Register
-                </button>
-            </div>
-        </form>
-
+    <div class="bg-aurora">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
     </div>
 
-    <!-- REGISTER MODAL -->
+    <div class="login-container">
+        <h2>Login</h2>
+        <form id="loginForm">
+            <input type="text" id="username" placeholder="Username" required>
+            <input type="password" id="password" placeholder="Password" required>
+            <div class="btn-group">
+                <button type="submit" class="login-btn">Login</button>
+                <button type="button" class="register-btn" onclick="openRegisterModal()">Register</button>
+            </div>
+        </form>
+    </div>
 
     <div id="registerModal" class="modal">
-
         <div class="modal-content">
-
             <h2>Create Account</h2>
-
-            <input type="text"
-                id="regUsername"
-                placeholder="Username">
-
-            <input type="password"
-                id="regPassword"
-                placeholder="Password">
-
-            <input type="password"
-                id="regConfirmPassword"
-                placeholder="Confirm Password">
-
+            <input type="text" id="regUsername" placeholder="Username">
+            <input type="password" id="regPassword" placeholder="Password">
+            <input type="password" id="regConfirmPassword" placeholder="Confirm Password">
             <div class="modal-buttons">
-                <button class="create-btn"
-                    onclick="registerUser()">
-                    Create Account
-                </button>
-
-                <button class="cancel-btn"
-                    onclick="closeRegisterModal()">
-                    Cancel
-                </button>
+                <button class="create-btn" onclick="registerUser()">Create Account</button>
+                <button class="cancel-btn" onclick="closeRegisterModal()">Cancel</button>
             </div>
-
         </div>
-
     </div>
 
     <script>
-
         function openRegisterModal() {
-            document.getElementById("registerModal").style.display = "flex";
+            const modal = document.getElementById("registerModal");
+            modal.style.display = "flex";
+            setTimeout(() => modal.classList.add("show"), 10);
         }
 
         function closeRegisterModal() {
-            document.getElementById("registerModal").style.display = "none";
+            const modal = document.getElementById("registerModal");
+            modal.classList.remove("show");
+            setTimeout(() => modal.style.display = "none", 300);
         }
 
-        // LOGIN
-
         document.getElementById("loginForm").addEventListener("submit", async (e) => {
-
             e.preventDefault();
-
-            const username =
-                document.getElementById("username").value.trim();
-
-            const password =
-                document.getElementById("password").value.trim();
+            const username = document.getElementById("username").value.trim();
+            const password = document.getElementById("password").value.trim();
 
             const res = await fetch("/api/login", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    username,
-                    password
-                })
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username, password })
             });
 
             const data = await res.json();
-
             if (data.success) {
-
-                localStorage.setItem(
-                    "loggedInUser",
-                    data.username
-                );
-
+                localStorage.setItem("loggedInUser", data.username);
                 window.location.href = "/";
-
             } else {
-
                 alert(data.message);
-
             }
-
         });
 
-        // REGISTER
-
         async function registerUser() {
+            const username = document.getElementById("regUsername").value.trim();
+            const password = document.getElementById("regPassword").value.trim();
+            const confirmPassword = document.getElementById("regConfirmPassword").value.trim();
 
-            const username =
-                document.getElementById("regUsername").value.trim();
-
-            const password =
-                document.getElementById("regPassword").value.trim();
-
-            const confirmPassword =
-                document.getElementById("regConfirmPassword").value.trim();
-
-            if (!username || !password) {
-                alert("Please fill all fields");
-                return;
-            }
-
-            if (password !== confirmPassword) {
-                alert("Passwords do not match");
-                return;
-            }
+            if (!username || !password) return alert("Please fill all fields");
+            if (password !== confirmPassword) return alert("Passwords do not match");
 
             const res = await fetch("/api/register", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    username,
-                    password
-                })
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ username, password })
             });
 
-            const data = await res.json();
-
             if (res.ok) {
-
                 alert("Account Created Successfully");
-
                 closeRegisterModal();
-
-                document.getElementById("regUsername").value = "";
-                document.getElementById("regPassword").value = "";
-                document.getElementById("regConfirmPassword").value = "";
-
             } else {
-
+                const data = await res.json();
                 alert(data.message);
-
             }
-
         }
-
     </script>
-
 </body>
-
 </html>
