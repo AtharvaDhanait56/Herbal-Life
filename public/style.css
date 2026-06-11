@@ -299,6 +299,7 @@ th.num-col { text-align: right; }
 
     .container {
         padding: 20px 15px;
+        position: relative;
     }
 
     .customer-info-section {

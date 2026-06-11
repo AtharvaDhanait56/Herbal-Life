@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication Login Page</title>
+
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f4f6f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .login-container {
+            background: white;
+            padding: 30px;
+            width: 350px;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .login-container h2 {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #1e293b;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .login-btn {
+            background: #2563eb;
+            color: white;
+        }
+
+        .register-btn {
+            background: #10b981;
+            color: white;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 25px;
+            width: 400px;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-content h2 {
+            margin-top: 0;
+            text-align: center;
+            color: #1e293b;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .create-btn {
+            background: #10b981;
+            color: white;
+        }
+
+        .cancel-btn {
+            background: #ef4444;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="login-container">
+
+        <h2>Login</h2>
+
+        <form id="loginForm">
+            <input type="text" id="username" placeholder="Username" required>
+
+            <input type="password" id="password" placeholder="Password" required>
+
+            <div class="btn-group">
+                <button type="submit" class="login-btn">
+                    Login
+                </button>
+
+                <button type="button"
+                    class="register-btn"
+                    onclick="openRegisterModal()">
+                    Register
+                </button>
+            </div>
+        </form>
+
+    </div>
+
+    <!-- REGISTER MODAL -->
+
+    <div id="registerModal" class="modal">
+
+        <div class="modal-content">
+
+            <h2>Create Account</h2>
+
+            <input type="text"
+                id="regUsername"
+                placeholder="Username">
+
+            <input type="password"
+                id="regPassword"
+                placeholder="Password">
+
+            <input type="password"
+                id="regConfirmPassword"
+                placeholder="Confirm Password">
+
+            <div class="modal-buttons">
+                <button class="create-btn"
+                    onclick="registerUser()">
+                    Create Account
+                </button>
+
+                <button class="cancel-btn"
+                    onclick="closeRegisterModal()">
+                    Cancel
+                </button>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script>
+
+        function openRegisterModal() {
+            document.getElementById("registerModal").style.display = "flex";
+        }
+
+        function closeRegisterModal() {
+            document.getElementById("registerModal").style.display = "none";
+        }
+
+        // LOGIN
+
+        document.getElementById("loginForm").addEventListener("submit", async (e) => {
+
+            e.preventDefault();
+
+            const username =
+                document.getElementById("username").value.trim();
+
+            const password =
+                document.getElementById("password").value.trim();
+
+            const res = await fetch("/api/login", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    username,
+                    password
+                })
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+
+                localStorage.setItem(
+                    "loggedInUser",
+                    data.username
+                );
+
+                window.location.href = "/";
+
+            } else {
+
+                alert(data.message);
+
+            }
+
+        });
+
+        // REGISTER
+
+        async function registerUser() {
+
+            const username =
+                document.getElementById("regUsername").value.trim();
+
+            const password =
+                document.getElementById("regPassword").value.trim();
+
+            const confirmPassword =
+                document.getElementById("regConfirmPassword").value.trim();
+
+            if (!username || !password) {
+                alert("Please fill all fields");
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                alert("Passwords do not match");
+                return;
+            }
+
+            const res = await fetch("/api/register", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    username,
+                    password
+                })
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+
+                alert("Account Created Successfully");
+
+                closeRegisterModal();
+
+                document.getElementById("regUsername").value = "";
+                document.getElementById("regPassword").value = "";
+                document.getElementById("regConfirmPassword").value = "";
+
+            } else {
+
+                alert(data.message);
+
+            }
+
+        }
+
+    </script>
+
+</body>
+
+</html>

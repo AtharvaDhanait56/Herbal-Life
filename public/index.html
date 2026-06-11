@@ -13,6 +13,19 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
+        .top-user-bar {
+    position: absolute;
+    top: 25px;
+    right: 30px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+#userDisplay {
+    font-weight: 600;
+    color: #475569;
+}
         /* Styles for the expandable history details */
         .clickable-bill-row {
             cursor: pointer;
@@ -143,6 +156,13 @@
     <div class="container" id="invoiceContainer">
         <h2>HERBAL LIFE</h2>
 
+        <div class="top-user-bar">
+    <span id="userDisplay"></span>
+    <button onclick="logout()" class="btn-history-delete">
+        Logout
+    </button>
+</div>
+
         <div class="customer-info-section"
             style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px; background: #ffffff; padding: 15px 20px; border-radius: 8px; border: 1px solid #e2e8f0;">
             <label for="customerName"
@@ -242,6 +262,15 @@
     </div>
 
     <script>
+        const currentUser = localStorage.getItem("loggedInUser");
+        document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("userDisplay").textContent =
+        `Logged in as: ${currentUser}`;
+});
+
+        if (!currentUser) {
+            window.location.href = "/login.html";
+        }
         const priceLookupMap = {
             "1295 - AFRESH ENERGY DRINK MIX - LEMON": 773.00,
             "230K - AFRESH ENERGY DRINK MIX - KASHMIRI KAHWA": 773.00,
@@ -374,6 +403,11 @@
             calculateInvoice();
         }
 
+        function logout() {
+            localStorage.removeItem("loggedInUser");
+            window.location.href = "/login.html";
+        }
+
         async function saveBillToDatabase() {
             const customerName = document.getElementById('customerName').value.trim();
             if (!customerName) {
@@ -398,6 +432,7 @@
             });
 
             const billingPayload = {
+                username: currentUser,
                 customerName,
                 items,
                 grandTotal: parseFloat(grandTotalEl.textContent),
@@ -442,7 +477,7 @@
         // --- FETCH RECORDS AND BUILD ACCORDION WITH ACTIONS ---
         async function fetchSavedBills() {
             try {
-                const response = await fetch('/api/get-bills');
+                const response = await fetch(`/api/get-bills/${encodeURIComponent(currentUser)}`);
                 const bills = await response.json();
 
                 if (!response.ok) {
@@ -592,24 +627,32 @@
 
         // --- FRONTEND ACTION TO DELETE A RECORD FROM THE MYSQL DATABASE ---
         async function deleteBillFromDatabase(billId, customerName, displayId) {
-            const confirmDelete = confirm(`Are you sure you want to permanently delete the bill ${displayId} for "${customerName}" from the database?`);
+            const confirmDelete = confirm(
+                `Are you sure you want to permanently delete the bill ${displayId} for "${customerName}" from the database?`
+            );
+
             if (!confirmDelete) return;
 
             try {
-                const response = await fetch(`/api/delete-bill/${billId}`, {
-                    method: 'DELETE'
-                });
+                const response = await fetch(
+                    `/api/delete-bill/${billId}/${currentUser}`,
+                    {
+                        method: "DELETE"
+                    }
+                );
 
                 const result = await response.json();
+
                 if (response.ok) {
                     alert(`✅ Record ${displayId} deleted successfully.`);
                     fetchSavedBills();
                 } else {
                     alert(`❌ Database error: ${result.error}`);
                 }
+
             } catch (err) {
                 console.error(err);
-                alert("❌ Connection Refused. Ensure your Node server is running.");
+                alert("❌ Connection Refused. Ensure your backend Node server is running.");
             }
         }
 
