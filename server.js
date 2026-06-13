@@ -26,6 +26,10 @@ const db = mysql.createPool({
     queueLimit: 0
 });
 
+db.on('error', (err) => {
+    console.error('Database Pool Error:', err);
+});
+
 db.connect((err) => {
     if (err) {
         console.error('❌ Database connection failed:', err.stack);
