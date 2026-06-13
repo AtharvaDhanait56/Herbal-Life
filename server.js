@@ -15,19 +15,12 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // --- MYSQL DATABASE CONNECTION ---
-const db = mysql.createPool({
+const db = mysql.createConnection({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    port: process.env.DB_PORT,
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0
-});
-
-db.on('error', (err) => {
-    console.error('Database Pool Error:', err);
+    port: process.env.DB_PORT
 });
 
 db.connect((err) => {
