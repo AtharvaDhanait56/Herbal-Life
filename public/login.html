@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login & Register</title>
+    <title>Herbal Life Billing | Sign In</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
 
@@ -205,9 +205,10 @@
         .modal.show { opacity: 1; }
         .modal.show .modal-content { transform: scale(1); }
     </style>
+    <link rel="stylesheet" href="theme.css">
 </head>
 
-<body>
+<body class="auth-page">
 
     <div class="bg-aurora">
         <div class="blob blob-1"></div>
@@ -216,22 +217,35 @@
     </div>
 
     <div class="login-container">
-        <h2>Login</h2>
+        <div class="auth-brand">
+            <span class="auth-brand-mark" aria-hidden="true">HL</span>
+            <span>Herbal Life</span>
+        </div>
+        <span class="auth-kicker">Sales workspace</span>
+        <h2>Welcome back</h2>
+        <p class="auth-subtitle">Sign in to create invoices and manage customer payments.</p>
         <form id="loginForm">
+            <label for="username">Username</label>
             <input type="text" id="username" placeholder="Username" required>
+            <label for="password">Password</label>
             <input type="password" id="password" placeholder="Password" required>
             <div class="btn-group">
-                <button type="submit" class="login-btn">Login</button>
-                <button type="button" class="register-btn" onclick="openRegisterModal()">Register</button>
+                <button type="submit" class="login-btn">Sign In</button>
+                <button type="button" class="register-btn" onclick="openRegisterModal()">Create Account</button>
             </div>
         </form>
     </div>
 
     <div id="registerModal" class="modal">
         <div class="modal-content">
+            <span class="auth-kicker">New workspace access</span>
             <h2>Create Account</h2>
+            <p class="auth-subtitle">Set up your billing account in a few seconds.</p>
+            <label for="regUsername">Username</label>
             <input type="text" id="regUsername" placeholder="Username">
+            <label for="regPassword">Password</label>
             <input type="password" id="regPassword" placeholder="Password">
+            <label for="regConfirmPassword">Confirm password</label>
             <input type="password" id="regConfirmPassword" placeholder="Confirm Password">
             <div class="modal-buttons">
                 <button class="create-btn" onclick="registerUser()">Create Account</button>

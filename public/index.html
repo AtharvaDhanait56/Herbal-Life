@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Product Billing Calculator</title>
+    <title>Herbal Life Sales & Billing</title>
     <link rel="stylesheet" href="style.css">
 
     <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet">
@@ -14,18 +14,19 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         .top-user-bar {
-    position: absolute;
-    top: 25px;
-    right: 30px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
+            position: absolute;
+            top: 25px;
+            right: 30px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
 
-#userDisplay {
-    font-weight: 600;
-    color: #475569;
-}
+        #userDisplay {
+            font-weight: 600;
+            color: #475569;
+        }
+
         /* Styles for the expandable history details */
         .clickable-bill-row {
             cursor: pointer;
@@ -113,29 +114,209 @@
             box-shadow: 0 2px 6px rgba(239, 68, 68, 0.2);
         }
 
+        .btn-history-paid {
+            background: linear-gradient(135deg, #10b981, #047857);
+            color: white;
+            border: none;
+            padding: 8px 11px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: 7px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-history-paid:hover {
+            background: linear-gradient(135deg, #059669, #065f46);
+            transform: translateY(-1px);
+        }
+
+        .btn-history-paid.is-paid {
+            background: #d1fae5;
+            color: #047857;
+            border: 1px solid #6ee7b7;
+            cursor: default;
+            box-shadow: none;
+        }
+
+        .btn-history-paid.is-paid:hover {
+            transform: none;
+        }
+
+        .paid-badge,
+        .unpaid-badge {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-width: 88px;
+            padding: 7px 10px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: .04em;
+            line-height: 1.25;
+        }
+
+        .paid-badge {
+            background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+            color: #047857;
+            border: 1px solid #6ee7b7;
+            box-shadow: 0 3px 10px rgba(5, 150, 105, .12);
+        }
+
+        .paid-badge::before {
+            content: '✓';
+            font-size: 17px;
+            line-height: 1;
+            margin-bottom: 2px;
+        }
+
+        .unpaid-badge {
+            background: #fff7ed;
+            color: #c2410c;
+            border: 1px solid #fed7aa;
+        }
+
+        .payment-amount {
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: 0;
+            margin-top: 2px;
+        }
+
+        .bill-paid>td:first-child {
+            box-shadow: inset 4px 0 0 #10b981;
+        }
+
         .history-actions-cell {
-            display: flex;
+            display: grid;
+            grid-template-columns: repeat(3, minmax(68px, 1fr));
             justify-content: center;
             align-items: center;
-            gap: 10px;
-            padding: 8px;
+            gap: 6px;
+            padding: 6px;
+        }
+
+        .history-actions-cell button {
+            width: 100%;
+            min-height: 34px;
+            justify-content: center;
+            white-space: nowrap;
+            padding: 8px 9px;
+            font-size: 12px;
+        }
+
+        .payment-popover {
+            display: none;
+            grid-column: 1 / -1;
+            grid-row: 2;
+            grid-template-columns: 1fr auto;
+            gap: 7px;
+            margin-top: 3px;
+            padding: 10px;
+            background: #f0fdf4;
+            border: 1px solid #86efac;
+            border-radius: 9px;
+            box-shadow: 0 6px 18px rgba(15, 23, 42, .12);
+            text-align: left;
+        }
+
+        .payment-popover.is-open {
+            display: grid;
+        }
+
+        .payment-popover-label {
+            grid-column: 1 / -1;
+            color: #166534;
+            font-size: 11px;
+            font-weight: 700;
+        }
+
+        .payment-input-wrap {
+            display: flex;
+            align-items: center;
+            min-width: 0;
+            overflow: hidden;
+            background: white;
+            border: 1px solid #86efac;
+            border-radius: 7px;
+        }
+
+        .payment-input-wrap span {
+            padding-left: 9px;
+            color: #047857;
+            font-weight: 700;
+        }
+
+        .payment-input-wrap input {
+            width: 100%;
+            min-width: 0;
+            padding: 7px 8px 7px 4px;
+            border: 0;
+            outline: 0;
+            color: #14532d;
+            font-weight: 700;
+            background: transparent;
+        }
+
+        .payment-popover-controls {
+            display: flex;
+            gap: 5px;
+        }
+
+        .history-actions-cell .payment-popover-controls button {
+            width: auto;
+            min-height: 32px;
+            padding: 6px 9px;
+        }
+
+        .payment-cancel {
+            background: white;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+        }
+
+        .payment-save {
+            background: #059669;
+            color: white;
+            border: 1px solid #059669;
+            border-radius: 6px;
+        }
+
+        .payment-error {
+            display: none;
+            grid-column: 1 / -1;
+            color: #b91c1c;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        .history-table {
+            min-width: 1040px;
+        }
+
+        .history-table td {
+            vertical-align: middle;
         }
 
         /* Search Bar styling inside history modal */
         .history-search-container {
-            margin-bottom: 20px;
+            margin-bottom: 0;
             background: #f8fafc;
-            padding: 12px 18px;
-            border-radius: 8px;
-            border: 1px solid #e2e8f0;
+            padding: 0;
+            border-radius: 0;
+            border: 0;
             display: flex;
             align-items: center;
             gap: 10px;
+            min-width: 280px;
         }
 
         .history-search-input {
             width: 100%;
-            padding: 8px 14px;
+            padding: 9px 12px;
             border: 1px solid #cbd5e1;
             border-radius: 6px;
             font-size: 14px;
@@ -148,26 +329,219 @@
             border-color: #6366f1;
             box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
         }
+
+        .history-filter-toolbar {
+            display: grid;
+            grid-template-columns: minmax(280px, 1fr) 165px 165px auto;
+            gap: 10px;
+            align-items: center;
+            margin: 0 0 14px;
+            padding: 10px 12px;
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+        }
+
+        .history-filter-field {
+            display: grid;
+            gap: 4px;
+        }
+
+        .history-filter-field label {
+            color: #475569;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+        }
+
+        .history-filter-field select {
+            width: 100%;
+            padding: 9px 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+            background: #f8fafc;
+            color: #1e293b;
+            font-weight: 600;
+            outline: none;
+        }
+
+        .history-result-summary {
+            justify-self: end;
+            color: #475569;
+            font-size: 12px;
+            font-weight: 600;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 999px;
+            padding: 9px 12px;
+            white-space: nowrap;
+        }
+
+        .page-subtitle,
+        .history-subtitle {
+            margin: -18px 0 22px;
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .history-subtitle {
+            margin: -2px 0 18px;
+        }
+
+        .financial-overview {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .finance-card {
+            position: relative;
+            overflow: hidden;
+            padding: 15px 16px;
+            border: 1px solid #e2e8f0;
+            border-radius: 11px;
+            background: #f8fafc;
+        }
+
+        .finance-card::after {
+            content: '';
+            position: absolute;
+            width: 55px;
+            height: 55px;
+            right: -18px;
+            top: -18px;
+            border-radius: 50%;
+            background: currentColor;
+            opacity: .08;
+        }
+
+        .finance-card.cost {
+            color: #7c3aed;
+            background: #faf5ff;
+            border-color: #e9d5ff;
+        }
+
+        .finance-card.received {
+            color: #047857;
+            background: #ecfdf5;
+            border-color: #a7f3d0;
+        }
+
+        .finance-card.profit {
+            color: #1d4ed8;
+            background: #eff6ff;
+            border-color: #bfdbfe;
+        }
+
+        .finance-card.unpaid {
+            color: #c2410c;
+            background: #fff7ed;
+            border-color: #fed7aa;
+        }
+
+        .finance-card.negative {
+            color: #b91c1c;
+            background: #fef2f2;
+            border-color: #fecaca;
+        }
+
+        .finance-label {
+            display: block;
+            margin-bottom: 7px;
+            color: #475569;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+        }
+
+        .finance-value {
+            display: block;
+            font-size: 21px;
+            font-weight: 800;
+            letter-spacing: -.02em;
+        }
+
+        .finance-note {
+            display: block;
+            margin-top: 4px;
+            color: #64748b;
+            font-size: 10px;
+        }
+
+        @media screen and (max-width: 900px) {
+            .financial-overview {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .history-filter-toolbar {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .history-search-container {
+                grid-column: 1 / -1;
+            }
+
+            .history-result-summary {
+                justify-self: stretch;
+                text-align: center;
+            }
+        }
+
+        @media screen and (max-width: 520px) {
+            .financial-overview {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .history-filter-toolbar {
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+                padding: 9px;
+            }
+
+            .history-search-container {
+                min-width: 0;
+            }
+
+            .history-search-container,
+            .history-result-summary {
+                grid-column: 1 / -1;
+            }
+
+            .history-filter-field label {
+                font-size: 9px;
+            }
+        }
     </style>
+    <link rel="stylesheet" href="theme.css">
 </head>
 
-<body>
+<body class="app-shell">
 
     <div class="bg-aurora">
-    <div class="blob blob-1"></div>
-    <div class="blob blob-2"></div>
-    <div class="blob blob-3"></div>
-</div>
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
 
     <div class="container" id="invoiceContainer">
-        <h2>HERBAL LIFE</h2>
-
-        <div class="top-user-bar">
-    <span id="userDisplay"></span>
-    <button onclick="logout()" class="btn-history-delete">
-        Logout
-    </button>
-</div>
+        <header class="app-header">
+            <div class="brand-lockup">
+                <span class="brand-mark" aria-hidden="true">HL</span>
+                <div>
+                    <span class="brand-kicker">Sales workspace</span>
+                    <h2>Herbal Life Billing</h2>
+                    <p class="page-subtitle">Create invoices and track customer payments.</p>
+                </div>
+            </div>
+            <div class="top-user-bar">
+                <span class="user-avatar" aria-hidden="true">●</span>
+                <span id="userDisplay"></span>
+                <button onclick="logout()" class="btn-logout">Sign Out</button>
+            </div>
+        </header>
 
         <div class="customer-info-section"
             style="display: flex; align-items: center; gap: 15px; margin-bottom: 20px; background: #ffffff; padding: 15px 20px; border-radius: 8px; border: 1px solid #e2e8f0;">
@@ -181,12 +555,10 @@
             <button class="btn-add" id="addTrackBtn">＋ Add Product</button>
 
             <div class="export-button-group">
-                <button class="btn-export" onclick="saveBillToDatabase()"
-                style="background-color: #f50b0b; color: white; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);">
-                Save
+                <button class="btn-save-invoice" onclick="saveBillToDatabase()">
+                    Save Invoice
                 </button>
-                <button class="btn-export" onclick="fetchSavedBills()"
-                    style="background-color: #6366f1; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15);">View Bills
+                <button class="btn-saved-invoices" onclick="fetchSavedBills()">Saved Invoices
                 </button>
             </div>
         </div>
@@ -196,12 +568,12 @@
                 <thead>
                     <tr>
                         <th class="text-col">Select Product</th>
-                        <th class="num-col">Price (₹)</th>
+                        <th class="num-col">List Price (₹)</th>
                         <th class="num-col">Qty</th>
-                        <th class="num-col">Total</th>
-                        <th class="num-col">Discount Value</th>
-                        <th class="num-col">Taxable</th>
-                        <th class="num-col">Payable</th>
+                        <th class="num-col">List Total</th>
+                        <th class="num-col">Member Discount</th>
+                        <th class="num-col">Discounted Amount</th>
+                        <th class="num-col">Purchase Cost</th>
                         <th class="action-header" style="width: 5%; text-align: center;" data-html2pdf-ignore="true">
                             Action</th>
                     </tr>
@@ -213,19 +585,19 @@
         <div class="summary-wrapper">
             <div class="summary-box">
                 <div class="summary-row">
-                    <span>Grand Total (Gross):</span>
+                    <span>Total List Price:</span>
                     <span class="display-val">₹<span id="grandTotal">0.00</span></span>
                 </div>
                 <div class="summary-row">
-                    <span>Total Discounted Value:</span>
+                    <span>Total Member Discount:</span>
                     <span class="display-val">₹<span id="grandDiscount">0.00</span></span>
                 </div>
                 <div class="summary-row">
-                    <span>Total Taxable Amount:</span>
+                    <span>Discounted Subtotal:</span>
                     <span class="display-val">₹<span id="grandTaxable">0.00</span></span>
                 </div>
                 <div class="summary-row grand-final">
-                    <span>Total Payable Amount:</span>
+                    <span>Total Purchase Cost:</span>
                     <span class="display-val">₹<span id="grandPayable">0.00</span></span>
                 </div>
             </div>
@@ -236,30 +608,76 @@
         style="display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); backdrop-filter: blur(4px); align-items: center; justify-content: center;">
         <div class="modal-content"
             style="background-color: white; padding: 30px; border-radius: 12px; width: 92%; max-width: 1200px; max-height: 85vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.2); position: relative;">
-            <span onclick="closeModal()"
+            <span class="modal-close-button" onclick="closeModal()"
                 style="position: absolute; right: 20px; top: 15px; font-size: 28px; font-weight: bold; cursor: pointer; color: #64748b;">&times;</span>
-            <h3 style="margin-top: 0; color: #1e293b; font-size: 22px; padding-bottom: 5px;">Stored Bills History</h3>
+            <h3 style="margin-top: 0; color: #1e293b; font-size: 22px; padding-bottom: 5px;">Saved Invoices</h3>
+            <p class="history-subtitle">Review purchase costs, customer payments, and sales results.</p>
+
+            <div class="financial-overview" aria-label="Invoice financial summary">
+                <div class="finance-card cost">
+                    <span class="finance-label">Total Purchase Cost</span>
+                    <strong class="finance-value" id="overviewPurchaseCost">₹0.00</strong>
+                    <span class="finance-note">Cost of all saved invoices</span>
+                </div>
+                <div class="finance-card received">
+                    <span class="finance-label">Total Customer Receipts</span>
+                    <strong class="finance-value" id="overviewReceived">₹0.00</strong>
+                    <span class="finance-note">Amounts recorded as paid</span>
+                </div>
+                <div class="finance-card profit" id="overviewProfitCard">
+                    <span class="finance-label">Profit on Paid Sales</span>
+                    <strong class="finance-value" id="overviewProfit">₹0.00</strong>
+                    <span class="finance-note">Receipts minus paid-bill costs</span>
+                </div>
+                <div class="finance-card unpaid">
+                    <span class="finance-label">Unpaid Bill Cost</span>
+                    <strong class="finance-value" id="overviewUnpaidCost">₹0.00</strong>
+                    <span class="finance-note">Purchase cost awaiting payment</span>
+                </div>
+            </div>
 
             <div class="history-search-container">
                 <span style="font-size: 16px;">🔍</span>
                 <input type="text" id="modalSearchInput" class="history-search-input"
-                    placeholder="Search by customer name or customized invoice number (e.g., INV-1002)..."
-                    oninput="filterStoredBills()">
+                    placeholder="Search by customer name or invoice number..." oninput="filterStoredBills()">
             </div>
 
-            <p style="color: #64748b; margin-top: 0; font-size: 14px; margin-bottom: 20px;">💡 Click anywhere on a row
-                to expand detailed item logs. You can independently download or permanently delete customer logs.</p>
+            <div class="history-filter-toolbar">
+                <div class="history-filter-field">
+                    <label for="paymentStatusFilter">Payment Filter</label>
+                    <select id="paymentStatusFilter" onchange="applyHistoryControls()">
+                        <option value="ALL">All Bills</option>
+                        <option value="UNPAID">Unpaid Bills Only</option>
+                        <option value="PAID">Paid Bills Only</option>
+                    </select>
+                </div>
+                <div class="history-filter-field">
+                    <label for="historySortSelect">Sort By</label>
+                    <select id="historySortSelect" onchange="applyHistoryControls()">
+                        <option value="newest">Newest First</option>
+                        <option value="oldest">Oldest First</option>
+                        <option value="amountHigh">Highest Amount</option>
+                        <option value="amountLow">Lowest Amount</option>
+                        <option value="customerAZ">Customer A-Z</option>
+                    </select>
+                </div>
+                <div class="history-result-summary" id="historyResultSummary">Showing 0 invoices</div>
+            </div>
+
+            <p style="color: #64748b; margin-top: 0; font-size: 13px; margin-bottom: 20px;">Select an invoice row to
+                view its product details.</p>
 
             <div class="table-responsive">
-                <table>
+                <table class="history-table">
                     <thead>
                         <tr>
-                            <th style="width: 15%;">Invoice No.</th>
-                            <th style="width: 23%;">Customer Name</th>
-                            <th style="width: 13%;">Gross Total</th>
-                            <th style="width: 13%;">Net Payable</th>
-                            <th style="width: 18%;">Date & Time</th>
-                            <th style="width: 18%; text-align: center;">Actions</th>
+                            <th style="width: 12%;">Invoice No.</th>
+                            <th style="width: 17%;">Customer Name</th>
+                            <th style="width: 11%;">List Total</th>
+                            <th style="width: 11%;">Purchase Cost</th>
+                            <th style="width: 12%; text-align:center;">Payment Status</th>
+                            <th style="width: 15%;">Created</th>
+                            <th style="width: 22%; text-align: center;">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="savedBillsRows"></tbody>
@@ -270,10 +688,43 @@
 
     <script>
         const currentUser = localStorage.getItem("loggedInUser");
+        const currencyFormatter = new Intl.NumberFormat('en-IN', {
+            style: 'currency',
+            currency: 'INR',
+            minimumFractionDigits: 2
+        });
+
+        function updateFinancialOverview(bills) {
+            const totalPurchaseCost = bills.reduce((sum, bill) => sum + (Number(bill.total_payable) || 0), 0);
+            const totalReceived = bills.reduce((sum, bill) => sum + (Number(bill.paid_amount) || 0), 0);
+            const paidPurchaseCost = bills.reduce((sum, bill) => {
+                return bill.payment_status === 'PAID' ? sum + (Number(bill.total_payable) || 0) : sum;
+            }, 0);
+            const unpaidPurchaseCost = bills.reduce((sum, bill) => {
+                return bill.payment_status !== 'PAID' ? sum + (Number(bill.total_payable) || 0) : sum;
+            }, 0);
+            const paidProfit = totalReceived - paidPurchaseCost;
+
+            document.getElementById('overviewPurchaseCost').textContent = currencyFormatter.format(totalPurchaseCost);
+            document.getElementById('overviewReceived').textContent = currencyFormatter.format(totalReceived);
+            document.getElementById('overviewProfit').textContent = currencyFormatter.format(paidProfit);
+            document.getElementById('overviewUnpaidCost').textContent = currencyFormatter.format(unpaidPurchaseCost);
+            document.getElementById('overviewProfitCard').classList.toggle('negative', paidProfit < 0);
+        }
+
+        function compactHistoryToolbar() {
+            const searchBox = document.querySelector('.history-search-container');
+            const toolbar = document.querySelector('.history-filter-toolbar');
+            if (searchBox && toolbar && searchBox.parentElement !== toolbar) {
+                toolbar.prepend(searchBox);
+            }
+        }
+
         document.addEventListener("DOMContentLoaded", () => {
-    document.getElementById("userDisplay").textContent =
-        `Logged in as: ${currentUser}`;
-});
+            document.getElementById("userDisplay").textContent =
+                `Logged in as: ${currentUser}`;
+            compactHistoryToolbar();
+        });
 
         if (!currentUser) {
             window.location.href = "/login.html";
@@ -458,7 +909,7 @@
                 const result = await response.json();
                 if (response.ok) {
                     const customDisplayId = `INV-100${result.billId}`;
-                    alert(`Invoice saved successfully to MySQL! Bill Reference: ${customDisplayId}`);
+                    alert(`Invoice saved successfully. Reference: ${customDisplayId}`);
 
                     // Clear customer name
                     document.getElementById('customerName').value = '';
@@ -473,11 +924,11 @@
                     calculateInvoice();
                 }
                 else {
-                    alert(`Database error: ${result.error}`);
+                    alert(`Unable to save invoice: ${result.error}`);
                 }
             } catch (err) {
                 console.error(err);
-                alert("Connection Refused. Ensure your Node server is running.");
+                alert("Unable to connect. Please check that the billing server is running.");
             }
         }
 
@@ -488,17 +939,21 @@
                 const bills = await response.json();
 
                 if (!response.ok) {
-                    alert("Failed to pull data from backend.");
+                    alert("Unable to load saved invoices.");
                     return;
                 }
 
+                updateFinancialOverview(bills);
+
                 document.getElementById('modalSearchInput').value = '';
+                document.getElementById('paymentStatusFilter').value = 'ALL';
+                document.getElementById('historySortSelect').value = 'newest';
 
                 const rowsContainer = document.getElementById('savedBillsRows');
                 rowsContainer.innerHTML = '';
 
                 if (bills.length === 0) {
-                    rowsContainer.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#64748b; padding:20px;">No saved invoices found in database.</td></tr>`;
+                    rowsContainer.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#64748b; padding:20px;">No saved invoices found in database.</td></tr>`;
                 }
 
                 bills.forEach(bill => {
@@ -511,23 +966,45 @@
 
                     const dateFormatted = new Date(bill.created_at).toLocaleString();
                     const professionalInvoiceNum = `INV-100${bill.id}`;
+                    const isPaid = bill.payment_status === 'PAID';
+                    const paidAmount = isPaid ? (parseFloat(bill.paid_amount) || parseFloat(bill.total_payable) || 0) : 0;
+                    const paymentBadge = isPaid
+                        ? `<div class="paid-badge">PAID<span class="payment-amount">₹${paidAmount.toFixed(2)} received</span></div>`
+                        : `<div class="unpaid-badge">UNPAID</div>`;
+                    const paidAction = isPaid
+                        ? `<button class="btn-history-paid is-paid" disabled title="This bill is paid">✓ Paid</button>`
+                        : `<button class="btn-history-paid" onclick="togglePaymentEntry(event, ${bill.id})" title="Enter amount and mark as paid">✓ Paid</button>
+                           <form class="payment-popover" id="payment-entry-${bill.id}" onsubmit="submitPaidAmount(event, ${bill.id}, ${parseFloat(bill.total_payable)})" onclick="event.stopPropagation()">
+                               <label class="payment-popover-label" for="paid-amount-${bill.id}">Amount received · Minimum ₹${parseFloat(bill.total_payable).toFixed(2)}</label>
+                               <div class="payment-input-wrap"><span>₹</span><input id="paid-amount-${bill.id}" type="number" min="${parseFloat(bill.total_payable).toFixed(2)}" step="0.01" value="${parseFloat(bill.total_payable).toFixed(2)}" required></div>
+                               <div class="payment-popover-controls">
+                                   <button type="button" class="payment-cancel" onclick="closePaymentEntry(event, ${bill.id})">Cancel</button>
+                                   <button type="submit" class="payment-save">Save</button>
+                               </div>
+                               <span class="payment-error"></span>
+                           </form>`;
 
                     // 1. Summary Main History Row
                     const mainRow = document.createElement('tr');
-                    mainRow.className = 'clickable-bill-row';
+                    mainRow.className = `clickable-bill-row${isPaid ? ' bill-paid' : ''}`;
                     mainRow.setAttribute('data-customer', bill.customer_name.toLowerCase());
                     mainRow.setAttribute('data-id', professionalInvoiceNum.toLowerCase());
+                    mainRow.setAttribute('data-status', isPaid ? 'PAID' : 'UNPAID');
+                    mainRow.setAttribute('data-created', new Date(bill.created_at).getTime() || 0);
+                    mainRow.setAttribute('data-payable', parseFloat(bill.total_payable) || 0);
 
                     mainRow.innerHTML = `
                     <td style="font-weight:bold; color:#4f46e5;">${professionalInvoiceNum}</td>
                     <td style="color:#334155; font-weight:500;">👤 ${bill.customer_name}</td>
                     <td class="display-val">₹${parseFloat(bill.grand_total).toFixed(2)}</td>
-                    <td class="display-val" style="color:#10b981; font-weight:600;">₹${parseFloat(bill.total_payable).toFixed(2)}</td>
+                    <td class="display-val" style="color:#059669; font-weight:700;">₹${parseFloat(bill.total_payable).toFixed(2)}</td>
+                    <td style="text-align:center;">${paymentBadge}</td>
                     <td style="color:#64748b; font-size:13px;">${dateFormatted} 🔽</td>
                     <td style="text-align:center;">
                         <div class="history-actions-cell">
-                            <button class="btn-history-download" onclick="downloadSingleHistoryPDF('${professionalInvoiceNum}', '${bill.customer_name.replace(/'/g, "\\'")}', ${JSON.stringify(itemsList).replace(/"/g, '&quot;')}, ${bill.grand_total}, ${bill.total_discount}, ${bill.total_taxable}, ${bill.total_payable}); event.stopPropagation();">
-                                Download
+                            ${paidAction}
+                            <button class="btn-history-download" onclick="downloadSingleHistoryPDF('${professionalInvoiceNum}', '${bill.customer_name.replace(/'/g, "\\'")}', ${JSON.stringify(itemsList).replace(/"/g, '&quot;')}, ${bill.grand_total}, ${bill.total_discount}, ${bill.total_taxable}, ${bill.total_payable}, '${bill.payment_status || 'UNPAID'}', ${paidAmount}); event.stopPropagation();">
+                                ↓ PDF
                             </button>
                             <button class="btn-history-delete" onclick="deleteBillFromDatabase(${bill.id}, '${bill.customer_name.replace(/'/g, "\\'")}', '${professionalInvoiceNum}'); event.stopPropagation();">
                                 Delete
@@ -543,17 +1020,17 @@
 
                     let itemsTableHTML = `
                     <div class="details-container">
-                        <strong> Products Breakdown:</strong>
+                        <strong>Invoice Items</strong>
                         <table class="inner-details-table">
                             <thead>
                                 <tr>
                                     <th style="width: 35%;">Product Name</th>
-                                    <th style="width: 10%; text-align: right;">Price (₹)</th>
+                                    <th style="width: 10%; text-align: right;">List Price (₹)</th>
                                     <th style="width: 5%; text-align: center;">Qty</th>
-                                    <th style="width: 12%; text-align: right;">Total</th>
-                                    <th style="width: 13%; text-align: right;"> Discount Price</th>
-                                    <th style="width: 12%; text-align: right;">Taxable</th>
-                                    <th style="width: 13%; text-align: right;">Payable</th>
+                                    <th style="width: 12%; text-align: right;">List Total</th>
+                                    <th style="width: 13%; text-align: right;">Member Discount</th>
+                                    <th style="width: 12%; text-align: right;">Discounted Amount</th>
+                                    <th style="width: 13%; text-align: right;">Purchase Cost</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -582,15 +1059,16 @@
                             </tbody>
                         </table>
                         <div style="margin-top: 12px; display: flex; justify-content: flex-end; gap: 25px; font-size: 13px; color: #1e293b; background: #f8fafc; padding: 10px; border-radius: 4px; border: 1px solid #e2e8f0;">
-                            <span><strong>Gross Total:</strong> ₹${parseFloat(bill.grand_total).toFixed(2)}</span>
-                            <span style="color: #dc2626;"><strong>Total Saved:</strong> ₹${parseFloat(bill.total_discount).toFixed(2)}</span>
-                            <span><strong>Taxable Basis:</strong> ₹${parseFloat(bill.total_taxable).toFixed(2)}</span>
-                            <span style="color: #10b981;"><strong>Net Payable:</strong> ₹${parseFloat(bill.total_payable).toFixed(2)}</span>
+                            <span><strong>List Total:</strong> ₹${parseFloat(bill.grand_total).toFixed(2)}</span>
+                            <span style="color: #dc2626;"><strong>Member Discount:</strong> ₹${parseFloat(bill.total_discount).toFixed(2)}</span>
+                            <span><strong>Discounted Subtotal:</strong> ₹${parseFloat(bill.total_taxable).toFixed(2)}</span>
+                            <span style="color: #10b981;"><strong>Purchase Cost:</strong> ₹${parseFloat(bill.total_payable).toFixed(2)}</span>
+                            ${isPaid ? `<span style="color:#047857;"><strong>Customer Paid:</strong> ₹${paidAmount.toFixed(2)}</span>` : `<span style="color:#b91c1c;"><strong>Awaiting Payment</strong></span>`}
                         </div>
                     </div>
                 `;
 
-                    detailsRow.innerHTML = `<td colspan="6" style="padding: 0;">${itemsTableHTML}</td>`;
+                    detailsRow.innerHTML = `<td colspan="7" style="padding: 0;">${itemsTableHTML}</td>`;
 
                     // Main Accordion Click Toggle
                     mainRow.addEventListener('click', () => {
@@ -603,6 +1081,7 @@
                     rowsContainer.appendChild(detailsRow);
                 });
 
+                applyHistoryControls();
                 document.getElementById('billsModal').style.display = 'flex';
 
             } catch (err) {
@@ -611,18 +1090,63 @@
             }
         }
 
-        // --- CLIENT-SIDE SEARCH FILTER ALGORITHM ---
+        function sortStoredBills() {
+            const rowsContainer = document.getElementById('savedBillsRows');
+            const sortMode = document.getElementById('historySortSelect')?.value || 'newest';
+            const mainRows = Array.from(rowsContainer.querySelectorAll('.clickable-bill-row'));
+
+            mainRows.sort((a, b) => {
+                if (sortMode === 'oldest') return Number(a.dataset.created) - Number(b.dataset.created);
+                if (sortMode === 'amountHigh') return Number(b.dataset.payable) - Number(a.dataset.payable);
+                if (sortMode === 'amountLow') return Number(a.dataset.payable) - Number(b.dataset.payable);
+                if (sortMode === 'customerAZ') return (a.dataset.customer || '').localeCompare(b.dataset.customer || '');
+                return Number(b.dataset.created) - Number(a.dataset.created);
+            });
+
+            mainRows.forEach(row => {
+                const detailsRow = row.nextElementSibling;
+                rowsContainer.appendChild(row);
+                if (detailsRow && detailsRow.classList.contains('details-row')) {
+                    rowsContainer.appendChild(detailsRow);
+                }
+            });
+        }
+
+        function updateHistoryResultSummary(visibleRows, totalRows) {
+            const summaryEl = document.getElementById('historyResultSummary');
+            if (!summaryEl) return;
+
+            const allRows = Array.from(document.querySelectorAll('.clickable-bill-row'));
+            const paidCount = allRows.filter(row => row.dataset.status === 'PAID').length;
+            const unpaidCount = allRows.filter(row => row.dataset.status === 'UNPAID').length;
+            summaryEl.textContent = `Showing ${visibleRows} of ${totalRows} invoices · Paid: ${paidCount} · Unpaid: ${unpaidCount}`;
+        }
+
+        function applyHistoryControls() {
+            sortStoredBills();
+            filterStoredBills();
+        }
+
+        // --- CLIENT-SIDE SEARCH AND PAID/UNPAID FILTER ALGORITHM ---
         function filterStoredBills() {
             const query = document.getElementById('modalSearchInput').value.toLowerCase().trim();
+            const statusFilter = document.getElementById('paymentStatusFilter')?.value || 'ALL';
+            const rowsContainer = document.getElementById('savedBillsRows');
+            document.getElementById('historyNoResultsRow')?.remove();
             const mainRows = document.querySelectorAll('.clickable-bill-row');
+            let visibleRows = 0;
 
             mainRows.forEach(row => {
                 const customerData = row.getAttribute('data-customer') || "";
                 const idData = row.getAttribute('data-id') || "";
+                const statusData = row.getAttribute('data-status') || "UNPAID";
                 const detailsRow = row.nextElementSibling;
+                const matchesText = customerData.includes(query) || idData.includes(query);
+                const matchesStatus = statusFilter === 'ALL' || statusData === statusFilter;
 
-                if (customerData.includes(query) || idData.includes(query)) {
+                if (matchesText && matchesStatus) {
                     row.style.display = 'table-row';
+                    visibleRows += 1;
                 } else {
                     row.style.display = 'none';
                     if (detailsRow && detailsRow.classList.contains('details-row')) {
@@ -630,6 +1154,91 @@
                     }
                 }
             });
+
+            if (visibleRows === 0 && mainRows.length > 0) {
+                const noResultsRow = document.createElement('tr');
+                noResultsRow.id = 'historyNoResultsRow';
+                noResultsRow.innerHTML = `<td colspan="7" style="text-align:center; color:#64748b; padding:22px;">No invoices match the selected search/filter.</td>`;
+                rowsContainer.appendChild(noResultsRow);
+            }
+
+            updateHistoryResultSummary(visibleRows, mainRows.length);
+        }
+
+        // --- FRONTEND ACTION TO MARK A BILL AS PAID ---
+        function togglePaymentEntry(event, billId) {
+            event.stopPropagation();
+            const target = document.getElementById(`payment-entry-${billId}`);
+            const shouldOpen = !target.classList.contains('is-open');
+
+            document.querySelectorAll('.payment-popover.is-open').forEach(panel => panel.classList.remove('is-open'));
+            if (shouldOpen) {
+                target.classList.add('is-open');
+                const input = target.querySelector('input');
+                input.focus();
+                input.select();
+            }
+        }
+
+        function closePaymentEntry(event, billId) {
+            event.stopPropagation();
+            document.getElementById(`payment-entry-${billId}`).classList.remove('is-open');
+        }
+
+        document.addEventListener('click', () => {
+            document.querySelectorAll('.payment-popover.is-open').forEach(panel => panel.classList.remove('is-open'));
+        });
+
+        document.addEventListener('keydown', event => {
+            if (event.key === 'Escape') {
+                document.querySelectorAll('.payment-popover.is-open').forEach(panel => panel.classList.remove('is-open'));
+            }
+        });
+
+        async function submitPaidAmount(event, billId, netPayable) {
+            event.preventDefault();
+            event.stopPropagation();
+
+            const panel = event.currentTarget;
+            const input = panel.querySelector('input');
+            const errorEl = panel.querySelector('.payment-error');
+            const saveButton = panel.querySelector('.payment-save');
+            const amount = Number(input.value);
+
+            errorEl.style.display = 'none';
+            if (!Number.isFinite(amount) || amount < netPayable) {
+                errorEl.textContent = `Enter at least ₹${netPayable.toFixed(2)}.`;
+                errorEl.style.display = 'block';
+                input.focus();
+                return;
+            }
+
+            saveButton.disabled = true;
+            saveButton.textContent = 'Saving…';
+
+            try {
+                const response = await fetch(`/api/bills/${billId}/paid`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: currentUser, amount })
+                });
+                const result = await response.json();
+
+                if (!response.ok) {
+                    errorEl.textContent = result.error || 'Unable to mark this bill as paid.';
+                    errorEl.style.display = 'block';
+                    return;
+                }
+
+                await fetchSavedBills();
+            } catch (err) {
+                console.error(err);
+                errorEl.textContent = 'Unable to connect to the server.';
+                errorEl.style.display = 'block';
+            } finally {
+                saveButton.disabled = false;
+                saveButton.textContent = 'Save';
+            }
         }
 
         // --- FRONTEND ACTION TO DELETE A RECORD FROM THE MYSQL DATABASE ---
@@ -667,10 +1276,10 @@
             document.getElementById('billsModal').style.display = 'none';
         }
 
-        // --- GENERATES SECURE EXPORT COMPLIANT ISOLATED CUSTOMER INVOICES ---
-        function downloadSingleHistoryPDF(invoiceNum, customerName, items, gross, discount, taxable, payable) {
+        // --- GENERATES CUSTOMER-FACING INVOICES WITHOUT INTERNAL PURCHASE COST WORDING ---
+        function legacyDownloadSingleHistoryPDF(invoiceNum, customerName, items, gross, discount, taxable, payable, paymentStatus, paidAmount) {
             const tempDiv = document.createElement('div');
-            tempDiv.style.padding = '35px';
+            tempDiv.style.padding = '28px';
             tempDiv.style.backgroundColor = '#ffffff';
             tempDiv.style.fontFamily = "'Segoe UI', system-ui, sans-serif";
 
@@ -681,7 +1290,7 @@
                 const taxAmt = total - discVal;
                 const netPay = taxAmt * 1.05;
                 tableRowsHTML += `
-                <tr>
+                <tr style="page-break-inside: avoid; break-inside: avoid;">
                     <td style="padding:10px; border-bottom:1px solid #e2e8f0; font-size:12px; font-weight:500;">${item.description}</td>
                     <td style="padding:10px; border-bottom:1px solid #e2e8f0; text-align:right; font-size:12px;">₹${parseFloat(item.price).toFixed(2)}</td>
                     <td style="padding:10px; border-bottom:1px solid #e2e8f0; text-align:center; font-size:12px; font-weight:600;">${item.qty}</td>
@@ -694,57 +1303,63 @@
             });
 
             tempDiv.innerHTML = `
-            <div style="text-align:center; border-bottom:2px solid #1e293b; padding-bottom:15px; margin-bottom:20px;">
-                <h2 style="margin:0; color:#1e293b; font-size:24px; letter-spacing:0.5px;">PRODUCT BILLING INVOICE</h2>
-                <p style="margin:5px 0 0 0; color:#64748b; font-size:13px;">Invoice Number: ${invoiceNum}</p>
+            <div style="text-align:center; border-bottom:2px solid #1e293b; padding-bottom:15px; margin-bottom:20px; page-break-inside: avoid; break-inside: avoid;">
+                <h2 style="margin:0; color:#1e293b; font-size:26px; letter-spacing:0.5px;">CUSTOMER INVOICE</h2>
+                <p style="margin:5px 0 0 0; color:#64748b; font-size:13px;">Herbal Life Products &nbsp;|&nbsp; Invoice Number: ${invoiceNum} &nbsp;|&nbsp; Date: ${new Date().toLocaleDateString('en-IN')}</p>
             </div>
-            <div style="margin-bottom:25px; font-size:14px; background:#f8fafc; padding:15px; border-radius:6px; border:1px solid #e2e8f0; color:#1e293b;">
+            <div style="margin-bottom:25px; font-size:14px; background:#f8fafc; padding:15px; border-radius:6px; border:1px solid #e2e8f0; color:#1e293b; page-break-inside: avoid; break-inside: avoid;">
                 <strong>Customer Name:</strong> ${customerName}
+                <span style="float:right; color:${paymentStatus === 'PAID' ? '#047857' : '#b91c1c'}; font-weight:700;">
+                    ${paymentStatus === 'PAID' ? `PAID · ₹${Number(paidAmount).toFixed(2)}` : 'UNPAID'}
+                </span>
             </div>
             <table style="width:100%; border-collapse:collapse; margin-bottom:25px;">
                 <thead>
                     <tr style="background-color:#1e293b; color:#ffffff; font-size:11px; text-transform:uppercase;">
                         <th style="padding:12px 10px; text-align:left;">Product Description</th>
-                        <th style="padding:12px 10px; text-align:right;">Price</th>
+                        <th style="padding:12px 10px; text-align:right;">List Price</th>
                         <th style="padding:12px 10px; text-align:center;">Qty</th>
-                        <th style="padding:12px 10px; text-align:right;">Total</th>
-                        <th style="padding:12px 10px; text-align:right;">Discount Price</th>
-                        <th style="padding:12px 10px; text-align:right;">Taxable</th>
-                        <th style="padding:12px 10px; text-align:right;">Payable</th>
+                        <th style="padding:12px 10px; text-align:right;">List Total</th>
+                        <th style="padding:12px 10px; text-align:right;">Member Discount</th>
+                        <th style="padding:12px 10px; text-align:right;">Discounted Amount</th>
+                        <th style="padding:12px 10px; text-align:right;">Amount Payable</th>
                     </tr>
                 </thead>
                 <tbody>
                     ${tableRowsHTML}
                 </tbody>
             </table>
-            <div style="display:flex; justify-content:flex-end;">
+            <div style="display:flex; justify-content:flex-end; page-break-inside: avoid; break-inside: avoid;">
                 <div style="width:300px; background:#f8fafc; padding:18px; border-radius:8px; border-top:4px solid #10b981; box-shadow:0 4px 10px rgba(0,0,0,0.03); border-left:1px solid #e2e8f0; border-right:1px solid #e2e8f0; border-bottom:1px solid #e2e8f0;">
-                    <div style="display:flex; justify-content:between; font-size:13px; color:#475569; margin-bottom:8px;">
-                        <span style="flex-grow:1;">Grand Total (Gross):</span><strong>₹${parseFloat(gross).toFixed(2)}</strong>
+                    <div style="display:flex; justify-content:space-between; gap:20px; font-size:13px; color:#475569; margin-bottom:8px;">
+                        <span style="flex-grow:1;">Total List Price:</span><strong>₹${parseFloat(gross).toFixed(2)}</strong>
                     </div>
-                    <div style="display:flex; justify-content:between; font-size:13px; color:#dc2626; margin-bottom:8px;">
-                        <span style="flex-grow:1;">Total Discounted Value:</span><strong>₹${parseFloat(discount).toFixed(2)}</strong>
+                    <div style="display:flex; justify-content:space-between; gap:20px; font-size:13px; color:#dc2626; margin-bottom:8px;">
+                        <span style="flex-grow:1;">Member Discount:</span><strong>₹${parseFloat(discount).toFixed(2)}</strong>
                     </div>
-                    <div style="display:flex; justify-content:between; font-size:13px; color:#475569; margin-bottom:8px;">
-                        <span style="flex-grow:1;">Total Taxable Amount:</span><strong>₹${parseFloat(taxable).toFixed(2)}</strong>
+                    <div style="display:flex; justify-content:space-between; gap:20px; font-size:13px; color:#475569; margin-bottom:8px;">
+                        <span style="flex-grow:1;">Discounted Subtotal:</span><strong>₹${parseFloat(taxable).toFixed(2)}</strong>
                     </div>
-                    <div style="display:flex; justify-content:between; font-size:16px; color:#1e293b; font-weight:700; border-top:1px dashed #cbd5e1; padding-top:12px; margin-top:12px;">
-                        <span style="flex-grow:1;">Total Payable Amount:</span><span style="color:#059669; font-size:18px;">₹${parseFloat(payable).toFixed(2)}</span>
+                    <div style="display:flex; justify-content:space-between; gap:20px; font-size:16px; color:#1e293b; font-weight:700; border-top:1px dashed #cbd5e1; padding-top:12px; margin-top:12px;">
+                        <span style="flex-grow:1;">Total Amount Payable:</span><span style="color:#059669; font-size:18px;">₹${parseFloat(payable).toFixed(2)}</span>
                     </div>
                 </div>
+            </div>
+            <div style="margin-top:22px; padding-top:12px; border-top:1px solid #e2e8f0; text-align:center; color:#64748b; font-size:11px; page-break-inside: avoid; break-inside: avoid;">
+                Thank you for your purchase.
             </div>
         `;
 
             const opt = {
-                margin: [8, 8, 8, 8],
+                margin: [12, 10, 16, 10],
                 filename: `Invoice_${customerName.replace(/\s+/g, '_')}_${invoiceNum}.pdf`,
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: {
-                    scale: 1.5,
+                    scale: 1.35,
                     useCORS: true
                 },
                 pagebreak: {
-                    mode: ['avoid-all', 'css', 'legacy']
+                    mode: ['css', 'legacy']
                 },
                 jsPDF: {
                     unit: 'mm',
@@ -753,7 +1368,115 @@
                 }
             };
 
-            tempDiv.style.width = "1000px";
+            tempDiv.style.width = "960px";
+
+            html2pdf().set(opt).from(tempDiv).save();
+        }
+
+        // Customer-safe PDF layout: hides internal discount, discounted subtotal, and purchase-cost math.
+        function downloadSingleHistoryPDF(invoiceNum, customerName, items, gross, discount, taxable, payable, paymentStatus, paidAmount) {
+            const tempDiv = document.createElement('div');
+            tempDiv.style.padding = '0';
+            tempDiv.style.backgroundColor = '#ffffff';
+            tempDiv.style.fontFamily = "'Segoe UI', Arial, sans-serif";
+            tempDiv.style.width = "680px";
+
+            let tableRowsHTML = '';
+            items.forEach(item => {
+                const qty = Number(item.qty) || 0;
+                const total = (Number(item.price) || 0) * qty;
+                const discountValue = total * 0.359;
+                const taxableValue = total - discountValue;
+                const finalAmount = taxableValue * 1.05;
+                const unitPrice = qty > 0 ? finalAmount / qty : finalAmount;
+
+                tableRowsHTML += `
+                <tr style="page-break-inside: avoid; break-inside: avoid;">
+                    <td style="padding:12px 14px; border-bottom:1px solid #e5edf0; font-size:12px; font-weight:600; color:#25332e;">${item.description}</td>
+                    <td style="padding:12px 14px; border-bottom:1px solid #e5edf0; text-align:center; font-size:12px; font-weight:700; color:#25332e;">${qty}</td>
+                    <td style="padding:12px 14px; border-bottom:1px solid #e5edf0; text-align:right; font-size:12px; color:#475569;">₹${unitPrice.toFixed(2)}</td>
+                    <td style="padding:12px 14px; border-bottom:1px solid #e5edf0; text-align:right; font-size:12px; font-weight:800; color:#087a4f;">₹${finalAmount.toFixed(2)}</td>
+                </tr>`;
+            });
+
+            const isPaid = paymentStatus === 'PAID';
+            const paidDisplay = Number(paidAmount) || Number(payable) || 0;
+
+            tempDiv.innerHTML = `
+            <div style="border:1px solid #dbe8e1; border-radius:18px; overflow:hidden; background:#ffffff;">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:24px; padding:28px 30px; background:linear-gradient(135deg,#0b2b1f,#087a4f); color:#ffffff; page-break-inside: avoid; break-inside: avoid;">
+                    <div>
+                        <div style="font-size:11px; font-weight:800; letter-spacing:2px; text-transform:uppercase; opacity:.78;">Herbal Life Products</div>
+                        <h2 style="margin:7px 0 0; color:#ffffff; font-size:28px; letter-spacing:-0.6px;">Customer Invoice</h2>
+                        <p style="margin:8px 0 0; color:#dff8eb; font-size:12px;">Thank you for your purchase.</p>
+                    </div>
+                    <div style="text-align:right; font-size:12px; line-height:1.8;">
+                        <div><span style="opacity:.72;">Invoice No.</span> <strong>${invoiceNum}</strong></div>
+                        <div><span style="opacity:.72;">Date</span> <strong>${new Date().toLocaleDateString('en-IN')}</strong></div>
+                        <div style="display:inline-block; margin-top:8px; padding:5px 10px; border-radius:999px; background:${isPaid ? '#dff8eb' : '#fff4df'}; color:${isPaid ? '#087a4f' : '#a96310'}; font-weight:800;">
+                            ${isPaid ? 'PAID' : 'UNPAID'}
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; gap:18px; padding:22px 30px; background:#f8fbf9; border-bottom:1px solid #e2eee7; page-break-inside: avoid; break-inside: avoid;">
+                    <div>
+                        <div style="color:#64748b; font-size:10px; font-weight:800; letter-spacing:1px; text-transform:uppercase;">Bill To</div>
+                        <div style="margin-top:6px; color:#1e293b; font-size:16px; font-weight:800;">${customerName}</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="color:#64748b; font-size:10px; font-weight:800; letter-spacing:1px; text-transform:uppercase;">Total Amount</div>
+                        <div style="margin-top:5px; color:#087a4f; font-size:24px; font-weight:900;">₹${parseFloat(payable).toFixed(2)}</div>
+                    </div>
+                </div>
+
+                <div style="padding:24px 30px 10px;">
+                    <table style="width:100%; border-collapse:separate; border-spacing:0; margin-bottom:24px; border:1px solid #dbe8e1; border-radius:12px; overflow:hidden;">
+                        <thead>
+                            <tr style="background-color:#eef7f1; color:#345247; font-size:10px; text-transform:uppercase; letter-spacing:.7px;">
+                                <th style="padding:13px 14px; text-align:left;">Product</th>
+                                <th style="padding:13px 14px; text-align:center; width:70px;">Qty</th>
+                                <th style="padding:13px 14px; text-align:right; width:120px;">Unit Price</th>
+                                <th style="padding:13px 14px; text-align:right; width:130px;">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>${tableRowsHTML}</tbody>
+                    </table>
+
+                    <div style="display:flex; justify-content:flex-end; page-break-inside: avoid; break-inside: avoid;">
+                        <div style="width:310px; background:#f8fbf9; padding:18px 20px; border-radius:14px; border:1px solid #dbe8e1;">
+                            <div style="display:flex; justify-content:space-between; gap:20px; align-items:center; font-size:13px; color:#475569;">
+                                <span style="flex-grow:1;">Invoice Total</span>
+                                <strong style="font-size:20px; color:#087a4f;">₹${parseFloat(payable).toFixed(2)}</strong>
+                            </div>
+                            ${isPaid ? `<div style="margin-top:10px; padding-top:10px; border-top:1px dashed #cbd5e1; display:flex; justify-content:space-between; gap:20px; font-size:12px; color:#047857;"><span>Amount Received</span><strong>₹${paidDisplay.toFixed(2)}</strong></div>` : ''}
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display:flex; justify-content:space-between; gap:20px; padding:16px 30px 22px; border-top:1px solid #e2eee7; color:#64748b; font-size:11px; page-break-inside: avoid; break-inside: avoid;">
+                    <span>Customer copy - prices shown are final customer payable amounts.</span>
+                    <span style="font-weight:700; color:#087a4f;">Thank you!</span>
+                </div>
+            </div>`;
+
+            const opt = {
+                margin: [5, 5, 5, 5],
+                filename: `Invoice_${customerName.replace(/\s+/g, '_')}_${invoiceNum}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: {
+                    scale: 1.2,
+                    useCORS: true
+                },
+                pagebreak: {
+                    mode: ['css', 'legacy']
+                },
+                jsPDF: {
+                    unit: 'mm',
+                    format: 'a4',
+                    orientation: 'portrait'
+                }
+            };
 
             html2pdf().set(opt).from(tempDiv).save();
         }
