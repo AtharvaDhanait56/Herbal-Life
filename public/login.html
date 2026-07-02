@@ -281,6 +281,7 @@
             const data = await res.json();
             if (data.success) {
                 localStorage.setItem("loggedInUser", data.username);
+                localStorage.setItem("isAdmin", data.isAdmin ? "true" : "false");
                 window.location.href = "/";
             } else {
                 alert(data.message);

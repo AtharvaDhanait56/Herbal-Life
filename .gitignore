@@ -9,6 +9,7 @@ node_modules/
 
 # AI/Local configuration
 .agents/
+.claude/settings.local.json
 
 # Logs
 *.log
@@ -25,5 +26,4 @@ Thumbs.db
 # Build folders
 dist/
 build/
-
 package-lock.json
