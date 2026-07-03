@@ -1,790 +1,77 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Herbal Life Sales & Billing</title>
-    <link rel="stylesheet" href="style.css">
-
-    <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <style>
-        .top-user-bar {
-            position: absolute;
-            top: 25px;
-            right: 30px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        #userDisplay {
-            font-weight: 600;
-            color: #475569;
-        }
-
-        /* Styles for the expandable history details */
-        .clickable-bill-row {
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-        }
-
-        .clickable-bill-row:hover {
-            background-color: #f8fafc !important;
-        }
-
-        .details-row {
-            background-color: #f1f5f9;
-        }
-
-        .details-container {
-            padding: 15px 20px;
-            background: #ffffff;
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            margin: 5px 10px 15px 10px;
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
-        }
-
-        .inner-details-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 8px;
-        }
-
-        .inner-details-table th {
-            background-color: #64748b !important;
-            color: white !important;
-            font-size: 12px;
-            padding: 6px 10px;
-            text-align: left;
-        }
-
-        .inner-details-table td {
-            padding: 8px 10px;
-            border-bottom: 1px solid #e2e8f0;
-            font-size: 13px;
-            color: #334155;
-        }
-
-        /* --- UPDATED BUTTON LAYOUT FOR HISTORY ACTIONS --- */
-        .btn-history-download {
-            background-color: #7c3aed;
-            color: white;
-            border: none;
-            padding: 8px 14px;
-            font-size: 13px;
-            font-weight: 600;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .btn-history-download:hover {
-            background-color: #6d28d9;
-            transform: translateY(-1px);
-            box-shadow: 0 2px 6px rgba(124, 58, 237, 0.2);
-        }
-
-        .btn-history-delete {
-            background-color: #ef4444;
-            color: white;
-            border: none;
-            padding: 8px 14px;
-            font-size: 13px;
-            font-weight: 600;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .btn-history-delete:hover {
-            background-color: #dc2626;
-            transform: translateY(-1px);
-            box-shadow: 0 2px 6px rgba(239, 68, 68, 0.2);
-        }
-
-        .btn-history-paid {
-            background: linear-gradient(135deg, #10b981, #047857);
-            color: white;
-            border: none;
-            padding: 8px 11px;
-            font-size: 13px;
-            font-weight: 600;
-            border-radius: 7px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .btn-history-paid:hover {
-            background: linear-gradient(135deg, #059669, #065f46);
-            transform: translateY(-1px);
-        }
-
-        .btn-history-paid.is-paid {
-            background: #d1fae5;
-            color: #047857;
-            border: 1px solid #6ee7b7;
-            cursor: default;
-            box-shadow: none;
-        }
-
-        .btn-history-paid.is-paid:hover {
-            transform: none;
-        }
-
-        .paid-badge,
-        .unpaid-badge {
-            display: inline-flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-width: 88px;
-            padding: 7px 10px;
-            border-radius: 10px;
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: .04em;
-            line-height: 1.25;
-        }
-
-        .paid-badge {
-            background: linear-gradient(135deg, #ecfdf5, #d1fae5);
-            color: #047857;
-            border: 1px solid #6ee7b7;
-            box-shadow: 0 3px 10px rgba(5, 150, 105, .12);
-        }
-
-        .paid-badge::before {
-            content: '✓';
-            font-size: 17px;
-            line-height: 1;
-            margin-bottom: 2px;
-        }
-
-        .unpaid-badge {
-            background: linear-gradient(135deg, #fff7ed, #ffedd5);
-            color: #c2410c;
-            border: 1px solid #fed7aa;
-            box-shadow: 0 3px 10px rgba(194, 65, 12, .1);
-        }
-
-        .unpaid-badge::before {
-            content: '●';
-            display: inline-block;
-            width: 6px;
-            height: 6px;
-            font-size: 0;
-            margin-bottom: 3px;
-            border-radius: 50%;
-            background: #f97316;
-            animation: pulseDotAmber 2s ease-in-out infinite;
-        }
-
-        .payment-amount {
-            font-size: 10px;
-            font-weight: 600;
-            letter-spacing: 0;
-            margin-top: 2px;
-        }
-
-        .bill-paid>td:first-child {
-            box-shadow: inset 4px 0 0 #10b981;
-        }
-
-        .history-actions-cell {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(68px, 1fr));
-            justify-content: center;
-            align-items: center;
-            gap: 6px;
-            padding: 6px;
-        }
-
-        .history-actions-cell button {
-            width: 100%;
-            min-height: 34px;
-            justify-content: center;
-            white-space: nowrap;
-            padding: 8px 9px;
-            font-size: 12px;
-        }
-
-        .payment-popover {
-            display: none;
-            grid-column: 1 / -1;
-            grid-row: 2;
-            grid-template-columns: 1fr auto;
-            gap: 7px;
-            margin-top: 3px;
-            padding: 10px;
-            background: #f0fdf4;
-            border: 1px solid #86efac;
-            border-radius: 9px;
-            box-shadow: 0 6px 18px rgba(15, 23, 42, .12);
-            text-align: left;
-        }
-
-        .payment-popover.is-open {
-            display: grid;
-        }
-
-        .payment-popover-label {
-            grid-column: 1 / -1;
-            color: #166534;
-            font-size: 11px;
-            font-weight: 700;
-        }
-
-        .payment-input-wrap {
-            display: flex;
-            align-items: center;
-            min-width: 0;
-            overflow: hidden;
-            background: white;
-            border: 1px solid #86efac;
-            border-radius: 7px;
-        }
-
-        .payment-input-wrap span {
-            padding-left: 9px;
-            color: #047857;
-            font-weight: 700;
-        }
-
-        .payment-input-wrap input {
-            width: 100%;
-            min-width: 0;
-            padding: 7px 8px 7px 4px;
-            border: 0;
-            outline: 0;
-            color: #14532d;
-            font-weight: 700;
-            background: transparent;
-        }
-
-        .payment-popover-controls {
-            display: flex;
-            gap: 5px;
-        }
-
-        .history-actions-cell .payment-popover-controls button {
-            width: auto;
-            min-height: 32px;
-            padding: 6px 9px;
-        }
-
-        .payment-cancel {
-            background: white;
-            color: #475569;
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-        }
-
-        .payment-save {
-            background: #059669;
-            color: white;
-            border: 1px solid #059669;
-            border-radius: 6px;
-        }
-
-        .payment-error {
-            display: none;
-            grid-column: 1 / -1;
-            color: #fca5a5;
-            font-size: 10px;
-            font-weight: 600;
-        }
-
-        .history-table {
-            min-width: 1040px;
-        }
-
-        .history-table td {
-            vertical-align: middle;
-        }
-
-        .row-expand-arrow {
-            display: inline-block;
-            transition: transform .25s ease;
-        }
-
-        .clickable-bill-row.row-expanded .row-expand-arrow {
-            transform: rotate(180deg);
-        }
-
-        .details-row td {
-            animation: rowFadeIn .22s ease;
-        }
-
-        @keyframes rowFadeIn {
-            from { opacity: 0; transform: translateY(-4px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Search Bar styling inside history modal */
-        .history-search-container {
-            margin-bottom: 0;
-            background: #f8fafc;
-            padding: 0;
-            border-radius: 0;
-            border: 0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            min-width: 280px;
-        }
-
-        .history-search-input {
-            width: 100%;
-            padding: 9px 12px;
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            font-size: 14px;
-            color: #1e293b;
-            outline: none;
-            transition: border-color 0.2s ease;
-        }
-
-        .history-search-input:focus {
-            border-color: #6366f1;
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-        }
-
-        .history-filter-toolbar {
-            display: grid;
-            grid-template-columns: minmax(280px, 1fr) 165px 165px auto;
-            gap: 10px;
-            align-items: center;
-            margin: 0 0 14px;
-            padding: 10px 12px;
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 10px;
-        }
-
-        .history-filter-field {
-            display: grid;
-            gap: 4px;
-        }
-
-        .history-filter-field label {
-            color: #475569;
-            font-size: 10px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: .04em;
-        }
-
-        .history-filter-field select {
-            width: 100%;
-            padding: 9px 10px;
-            border: 1px solid #cbd5e1;
-            border-radius: 7px;
-            background: #f8fafc;
-            color: #1e293b;
-            font-weight: 600;
-            outline: none;
-        }
-
-        .history-result-summary {
-            justify-self: end;
-            color: #475569;
-            font-size: 12px;
-            font-weight: 600;
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 999px;
-            padding: 9px 12px;
-            white-space: nowrap;
-        }
-
-        .page-subtitle,
-        .history-subtitle {
-            margin: -18px 0 22px;
-            color: #64748b;
-            font-size: 13px;
-        }
-
-        .history-subtitle {
-            margin: -2px 0 18px;
-        }
-
-        .financial-overview {
-            display: grid;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 12px;
-            margin-bottom: 18px;
-        }
-
-        .finance-card {
-            position: relative;
-            overflow: hidden;
-            isolation: isolate;
-            padding: 16px 17px;
-            border: 1px solid #e2e8f0;
-            border-left: 4px solid currentColor;
-            border-radius: 11px;
-            background: #f8fafc;
-        }
-
-        .finance-card::after {
-            content: '';
-            position: absolute;
-            width: 65px;
-            height: 65px;
-            right: -20px;
-            top: -20px;
-            border-radius: 50%;
-            background: currentColor;
-            opacity: .1;
-            z-index: -1;
-        }
-
-        .finance-icon {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 32px;
-            height: 32px;
-            margin-bottom: 10px;
-            border-radius: 9px;
-            background: currentColor;
-            font-size: 15px;
-            box-shadow: 0 6px 14px -5px currentColor;
-        }
-
-        .finance-card.cost { color: #c4b5fd; background: linear-gradient(150deg, rgba(124, 58, 237, .2), rgba(124, 58, 237, .04) 85%); border-color: rgba(167, 139, 250, .35); }
-        .finance-card.cost .finance-icon { background: #7c3aed; box-shadow: 0 6px 14px -5px #7c3aed; }
-
-        .finance-card.received { color: #6ee7b7; background: linear-gradient(150deg, rgba(5, 150, 105, .22), rgba(5, 150, 105, .04) 85%); border-color: rgba(52, 211, 153, .35); }
-        .finance-card.received .finance-icon { background: #059669; box-shadow: 0 6px 14px -5px #059669; }
-
-        .finance-card.profit { color: #93c5fd; background: linear-gradient(150deg, rgba(37, 99, 235, .22), rgba(37, 99, 235, .04) 85%); border-color: rgba(96, 165, 250, .35); }
-        .finance-card.profit .finance-icon { background: #2563eb; box-shadow: 0 6px 14px -5px #2563eb; }
-
-        .finance-card.unpaid { color: #fdba74; background: linear-gradient(150deg, rgba(194, 65, 12, .24), rgba(194, 65, 12, .05) 85%); border-color: rgba(251, 146, 60, .35); }
-        .finance-card.unpaid .finance-icon { background: #ea580c; box-shadow: 0 6px 14px -5px #ea580c; }
-
-        .finance-card.negative { color: #fca5a5; background: linear-gradient(150deg, rgba(185, 28, 28, .24), rgba(185, 28, 28, .05) 85%); border-color: rgba(248, 113, 113, .35); }
-        .finance-card.negative .finance-icon { background: #dc2626; box-shadow: 0 6px 14px -5px #dc2626; }
-
-        .finance-label {
-            display: block;
-            margin-bottom: 7px;
-            color: #475569;
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: .04em;
-        }
-
-        .finance-value {
-            display: block;
-            font-size: 21px;
-            font-weight: 800;
-            letter-spacing: -.02em;
-        }
-
-        .finance-note {
-            display: block;
-            margin-top: 4px;
-            color: #64748b;
-            font-size: 10px;
-        }
-
-        @media screen and (max-width: 900px) {
-            .financial-overview {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-            }
-
-            .history-filter-toolbar {
-                grid-template-columns: 1fr 1fr;
-            }
-
-            .history-search-container {
-                grid-column: 1 / -1;
-            }
-
-            .history-result-summary {
-                justify-self: stretch;
-                text-align: center;
-            }
-        }
-
-        @media screen and (max-width: 520px) {
-            .financial-overview {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-            }
-
-            .history-filter-toolbar {
-                grid-template-columns: 1fr 1fr;
-                gap: 8px;
-                padding: 9px;
-            }
-
-            .history-search-container {
-                min-width: 0;
-            }
-
-            .history-search-container,
-            .history-result-summary {
-                grid-column: 1 / -1;
-            }
-
-            .history-filter-field label {
-                font-size: 9px;
-            }
-        }
-    </style>
-    <link rel="stylesheet" href="theme.css">
-</head>
-
-<body class="app-shell">
-
-    <div class="bg-aurora">
-        <div class="blob blob-1"></div>
-        <div class="blob blob-2"></div>
-        <div class="blob blob-3"></div>
-    </div>
-
-    <div class="container" id="invoiceContainer">
-        <header class="app-header">
-            <div class="brand-lockup">
-                <span class="brand-mark" aria-hidden="true">HL</span>
-                <div>
-                    <span class="brand-kicker">Sales workspace</span>
-                    <h2>Herbal Life Billing</h2>
-                    <p class="page-subtitle">Create invoices and track customer payments.</p>
-                </div>
-            </div>
-            <div class="header-actions">
-                <button id="manageProductsBtn" class="btn-manage-products" onclick="openProductsModal()">⚙ Manage Products</button>
-                <div class="top-user-bar">
-                    <span class="user-avatar" aria-hidden="true">●</span>
-                    <span id="userDisplay"></span>
-                    <button onclick="logout()" class="btn-logout">Sign Out</button>
-                </div>
-            </div>
-        </header>
-
-        <div class="invoice-toolbar-card">
-            <div class="invoice-toolbar-head">
-                <span class="invoice-toolbar-icon" aria-hidden="true">🧾</span>
-                <div>
-                    <h3>New Invoice</h3>
-                    <p>Add products, then save when you're ready.</p>
-                </div>
-            </div>
-
-            <div class="customer-info-section">
-                <label for="customerName">Customer Name:</label>
-                <input type="text" id="customerName" placeholder="Enter customer's full name..." autocomplete="off">
-            </div>
-
-            <div class="action-footer-bar" data-html2pdf-ignore="true">
-                <button class="btn-add" id="addTrackBtn">＋ Add Product</button>
-
-                <div class="export-button-group">
-                    <button class="btn-save-invoice" onclick="saveBillToDatabase()">
-                        Save Invoice
-                    </button>
-                    <button class="btn-saved-invoices" onclick="fetchSavedBills()">Saved Invoices
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <div class="invoice-layout">
-            <div class="table-responsive">
-                <table id="productTable">
-                    <thead>
-                        <tr>
-                            <th class="text-col">Select Product</th>
-                            <th class="num-col">List Price (₹)</th>
-                            <th class="num-col">Qty</th>
-                            <th class="num-col">List Total</th>
-                            <th class="num-col">Member Discount</th>
-                            <th class="num-col">Discounted Amount</th>
-                            <th class="num-col">Purchase Cost</th>
-                            <th class="action-header" style="width: 5%; text-align: center;"
-                                data-html2pdf-ignore="true">
-                                Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="productRows"></tbody>
-                </table>
-            </div>
-
-            <aside class="summary-wrapper">
-                <div class="summary-box">
-                    <span class="summary-box-kicker">Invoice Summary</span>
-                    <div class="summary-row">
-                        <span>Total List Price:</span>
-                        <span class="display-val">₹<span id="grandTotal">0.00</span></span>
-                    </div>
-                    <div class="summary-row">
-                        <span>Total Member Discount:</span>
-                        <span class="display-val">₹<span id="grandDiscount">0.00</span></span>
-                    </div>
-                    <div class="summary-row">
-                        <span>Discounted Subtotal:</span>
-                        <span class="display-val">₹<span id="grandTaxable">0.00</span></span>
-                    </div>
-                    <div class="summary-row grand-final">
-                        <span>Total Purchase Cost:</span>
-                        <span class="display-val">₹<span id="grandPayable">0.00</span></span>
-                    </div>
-                </div>
-            </aside>
-        </div>
-    </div>
-
-    <div id="billsModal" class="modal"
-        style="display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); backdrop-filter: blur(4px); align-items: center; justify-content: center;">
-        <div class="modal-content"
-            style="background-color: white; padding: 30px; border-radius: 12px; width: 92%; max-width: 1200px; max-height: 85vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.2); position: relative;">
-            <span class="modal-close-button" onclick="closeModal()"
-                style="position: absolute; right: 20px; top: 15px; font-size: 28px; font-weight: bold; cursor: pointer; color: #64748b;">&times;</span>
-            <div class="products-modal-head">
-                <span class="invoice-toolbar-icon" aria-hidden="true">📋</span>
-                <div>
-                    <h3>Saved Invoices</h3>
-                    <p class="history-subtitle">Review purchase costs, customer payments, and sales results.</p>
-                </div>
-            </div>
-
-            <div class="financial-overview" aria-label="Invoice financial summary">
-                <div class="finance-card cost">
-                    <span class="finance-icon" aria-hidden="true">📦</span>
-                    <span class="finance-label">Total Purchase Cost</span>
-                    <strong class="finance-value" id="overviewPurchaseCost">₹0.00</strong>
-                    <span class="finance-note">Cost of all saved invoices</span>
-                </div>
-                <div class="finance-card received">
-                    <span class="finance-icon" aria-hidden="true">💵</span>
-                    <span class="finance-label">Total Customer Receipts</span>
-                    <strong class="finance-value" id="overviewReceived">₹0.00</strong>
-                    <span class="finance-note">Amounts recorded as paid</span>
-                </div>
-                <div class="finance-card profit" id="overviewProfitCard">
-                    <span class="finance-icon" aria-hidden="true">📈</span>
-                    <span class="finance-label">Profit on Paid Sales</span>
-                    <strong class="finance-value" id="overviewProfit">₹0.00</strong>
-                    <span class="finance-note">Receipts minus paid-bill costs</span>
-                </div>
-                <div class="finance-card unpaid">
-                    <span class="finance-icon" aria-hidden="true">⏳</span>
-                    <span class="finance-label">Unpaid Bill Cost</span>
-                    <strong class="finance-value" id="overviewUnpaidCost">₹0.00</strong>
-                    <span class="finance-note">Purchase cost awaiting payment</span>
-                </div>
-            </div>
-
-            <div class="history-search-container">
-                <span style="font-size: 16px;">🔍</span>
-                <input type="text" id="modalSearchInput" class="history-search-input"
-                    placeholder="Search by customer name or invoice number..." oninput="filterStoredBills()">
-            </div>
-
-            <div class="history-filter-toolbar">
-                <div class="history-filter-field">
-                    <label for="paymentStatusFilter">Payment Filter</label>
-                    <select id="paymentStatusFilter" onchange="applyHistoryControls()">
-                        <option value="ALL">All Bills</option>
-                        <option value="UNPAID">Unpaid Bills Only</option>
-                        <option value="PAID">Paid Bills Only</option>
-                    </select>
-                </div>
-                <div class="history-filter-field">
-                    <label for="historySortSelect">Sort By</label>
-                    <select id="historySortSelect" onchange="applyHistoryControls()">
-                        <option value="newest">Newest First</option>
-                        <option value="oldest">Oldest First</option>
-                        <option value="amountHigh">Highest Amount</option>
-                        <option value="amountLow">Lowest Amount</option>
-                        <option value="customerAZ">Customer A-Z</option>
-                    </select>
-                </div>
-                <div class="history-result-summary" id="historyResultSummary">Showing 0 invoices</div>
-            </div>
-
-            <p style="color: var(--dk-ink-500); margin-top: 0; font-size: 13px; margin-bottom: 20px;">Select an
-                invoice row to view its product details.</p>
-
-            <div class="table-responsive">
-                <table class="history-table">
-                    <thead>
-                        <tr>
-                            <th style="width: 10%;">Invoice No.</th>
-                            <th style="width: 13%;">Customer Name</th>
-                            <th style="width: 8%;">List Total</th>
-                            <th style="width: 8%;">Purchase Cost</th>
-                            <th style="width: 10%;">Selling Price</th>
-                            <th style="width: 10%; text-align:center;">Payment Status</th>
-                            <th style="width: 13%;">Created</th>
-                            <th style="width: 28%; text-align: center;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="savedBillsRows"></tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <div id="productsModal" class="modal"
-        style="display: none; position: fixed; z-index: 2000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); backdrop-filter: blur(4px); align-items: center; justify-content: center;">
-        <div class="modal-content"
-            style="background-color: white; padding: 30px; border-radius: 12px; width: 92%; max-width: 1100px; max-height: 85vh; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.2); position: relative;">
-            <span class="modal-close-button" onclick="closeProductsModal()"
-                style="position: absolute; right: 20px; top: 15px; font-size: 28px; font-weight: bold; cursor: pointer; color: #64748b;">&times;</span>
-            <div class="products-modal-head">
-                <span class="invoice-toolbar-icon" aria-hidden="true">📦</span>
-                <div>
-                    <h3>Manage Products</h3>
-                    <p class="history-subtitle">Products only track what you pay your vendor (cost price). The
-                        price you charge a customer is set per invoice from <strong>Saved Invoices → Set
-                            Price</strong>.</p>
-                </div>
-            </div>
-
-            <div class="product-form-card">
-                <span class="summary-box-kicker">Add a product</span>
-                <div class="product-form-grid">
-                    <div class="product-form-field">
-                        <label for="newProductSku">SKU</label>
-                        <input id="newProductSku" type="text" placeholder="e.g. 0020">
-                    </div>
-                    <div class="product-form-field">
-                        <label for="newProductName">Product Name</label>
-                        <input id="newProductName" type="text" placeholder="Product name">
-                    </div>
-                    <div class="product-form-field">
-                        <label for="newProductCost">Cost Price (₹)</label>
-                        <input id="newProductCost" type="number" min="0" step="0.01" placeholder="0.00">
-                    </div>
-                    <button class="btn-save-invoice product-form-submit" onclick="addProduct()">+ Add Product</button>
-                </div>
-            </div>
-
-            <span class="summary-box-kicker" style="margin-top: 22px;">Your catalog</span>
-            <div class="product-card-grid" id="productsListRows"></div>
-        </div>
-    </div>
-
-    <script>
         const currentUser = localStorage.getItem("loggedInUser");
         const isAdmin = localStorage.getItem("isAdmin") === "true";
+
+        // --- CUSTOM ALERT / CONFIRM / PROMPT (replaces native browser dialogs) ---
+        let dialogResolve = null;
+        let dialogMode = 'alert';
+
+        function openDialog({ message, mode, defaultValue = '', inputType = 'text' }) {
+            return new Promise((resolve) => {
+                dialogResolve = resolve;
+                dialogMode = mode;
+
+                document.getElementById('dialogMessage').textContent = message;
+                document.getElementById('dialogError').style.display = 'none';
+
+                const inputWrap = document.getElementById('dialogInputWrap');
+                const input = document.getElementById('dialogInput');
+                if (mode === 'prompt') {
+                    inputWrap.style.display = 'block';
+                    input.type = inputType;
+                    input.value = defaultValue;
+                } else {
+                    inputWrap.style.display = 'none';
+                }
+
+                document.getElementById('dialogCancelBtn').style.display = mode === 'alert' ? 'none' : 'inline-flex';
+                document.getElementById('dialogConfirmBtn').textContent = mode === 'confirm' ? 'Confirm' : 'OK';
+
+                const modalEl = document.getElementById('dialogModal');
+                modalEl.style.display = 'flex';
+                setTimeout(() => {
+                    modalEl.classList.add('show');
+                    if (mode === 'prompt') { input.focus(); input.select(); }
+                }, 10);
+            });
+        }
+
+        function dialogRespond(confirmed) {
+            const modalEl = document.getElementById('dialogModal');
+            modalEl.classList.remove('show');
+            setTimeout(() => {
+                // If a new dialog opened (e.g. a chained "deleted successfully" alert right
+                // after a confirm) it will have re-added 'show' by now - don't hide it out
+                // from under itself just because THIS dialog's own close animation finished.
+                if (!modalEl.classList.contains('show')) modalEl.style.display = 'none';
+            }, 200);
+
+            if (!dialogResolve) return;
+            const resolve = dialogResolve;
+            dialogResolve = null;
+
+            if (dialogMode === 'prompt') {
+                resolve(confirmed ? document.getElementById('dialogInput').value : null);
+            } else {
+                resolve(confirmed);
+            }
+        }
+
+        document.getElementById('dialogInput')?.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); dialogRespond(true); }
+            if (e.key === 'Escape') { e.preventDefault(); dialogRespond(false); }
+        });
+
+        function showAlert(message) {
+            return openDialog({ message, mode: 'alert' });
+        }
+
+        function showConfirm(message) {
+            return openDialog({ message, mode: 'confirm' });
+        }
+
+        function showPrompt(message, defaultValue = '', inputType = 'text') {
+            return openDialog({ message, mode: 'prompt', defaultValue, inputType });
+        }
 
         document.addEventListener("DOMContentLoaded", () => {
             const manageProductsBtn = document.getElementById('manageProductsBtn');
@@ -835,8 +122,18 @@
         });
 
         if (!currentUser) {
-            window.location.href = "/login.html";
+            // Replace (not push) so this unauthenticated page isn't left in browser history.
+            window.location.replace("/pages/login.html");
         }
+
+        // If this page is restored from the browser's bfcache (common on back/forward or
+        // swipe-back navigation), the script above does NOT re-run. Re-check localStorage
+        // directly each time the page is shown so a logged-out session can't be left visible.
+        window.addEventListener("pageshow", (event) => {
+            if (event.persisted && !localStorage.getItem("loggedInUser")) {
+                window.location.replace("/pages/login.html");
+            }
+        });
         // Product catalog is loaded from /api/products (see loadProductCatalog()); keyed the same way
         // the old hardcoded list was ("SKU - NAME") so the rest of the invoice logic barely changes.
         let productCatalog = {};
@@ -857,7 +154,7 @@
                 });
             } catch (err) {
                 console.error(err);
-                alert('Unable to load the product catalog. Please check that the billing server is running.');
+                await showAlert('Unable to load the product catalog. Please check that the billing server is running.');
             }
         }
 
@@ -976,19 +273,20 @@
         function logout() {
             localStorage.removeItem("loggedInUser");
             localStorage.removeItem("isAdmin");
-            window.location.href = "/login.html";
+            // Replace (not push) so "back" after logging out can't return to the app's last state.
+            window.location.replace("/pages/login.html");
         }
 
         async function saveBillToDatabase() {
             const customerName = document.getElementById('customerName').value.trim();
             if (!customerName) {
-                alert("Please fill out the Customer Name before saving.");
+                await showAlert("Please fill out the Customer Name before saving.");
                 return;
             }
 
             const rows = document.querySelectorAll('.product-row');
             if (rows.length === 0) {
-                alert("Cannot save an empty bill.");
+                await showAlert("Cannot save an empty bill.");
                 return;
             }
 
@@ -1022,7 +320,7 @@
                 const result = await response.json();
                 if (response.ok) {
                     const customDisplayId = `INV-100${result.billId}`;
-                    alert(`Invoice saved successfully. Reference: ${customDisplayId}`);
+                    await showAlert(`Invoice saved successfully. Reference: ${customDisplayId}`);
 
                     // Clear customer name
                     document.getElementById('customerName').value = '';
@@ -1037,11 +335,11 @@
                     calculateInvoice();
                 }
                 else {
-                    alert(`Unable to save invoice: ${result.error}`);
+                    await showAlert(`Unable to save invoice: ${result.error}`);
                 }
             } catch (err) {
                 console.error(err);
-                alert("Unable to connect. Please check that the billing server is running.");
+                await showAlert("Unable to connect. Please check that the billing server is running.");
             }
         }
 
@@ -1052,7 +350,7 @@
                 const bills = await response.json();
 
                 if (!response.ok) {
-                    alert("Unable to load saved invoices.");
+                    await showAlert("Unable to load saved invoices.");
                     return;
                 }
 
@@ -1087,7 +385,7 @@
                     const isPaid = bill.payment_status === 'PAID';
                     const paidAmount = isPaid ? (parseFloat(bill.paid_amount) || effectiveSelling || 0) : 0;
                     const paymentBadge = isPaid
-                        ? `<div class="paid-badge">PAID<span class="payment-amount">₹${paidAmount.toFixed(2)} received</span></div>`
+                        ? `<div class="paid-badge">PAID<span class="payment-amount">₹${paidAmount.toFixed(2)}</span></div>`
                         : `<div class="unpaid-badge">UNPAID</div>`;
                     const paidAction = isPaid
                         ? `<button class="btn-history-paid is-paid" disabled title="This bill is paid">✓ Paid</button>`
@@ -1118,15 +416,17 @@
                     <td style="color:var(--dk-ink-800); font-weight:500;">👤 ${bill.customer_name}</td>
                     <td class="display-val">₹${parseFloat(bill.grand_total).toFixed(2)}</td>
                     <td class="display-val" style="color:var(--dk-ink-500);">₹${parseFloat(bill.total_payable).toFixed(2)}</td>
-                    <td class="display-val" style="color:#34d399; font-weight:700;">₹${effectiveSelling.toFixed(2)}</td>
+                    <td class="display-val">
+                        <span style="color:#34d399; font-weight:700;">₹${effectiveSelling.toFixed(2)}</span>
+                        <button class="btn-history-setprice" style="display:block; margin-top:6px;" onclick="setBillSellingPrice(${bill.id}, ${effectiveSelling}); event.stopPropagation();" title="Set the selling price charged to this customer">
+                            Set Price
+                        </button>
+                    </td>
                     <td style="text-align:center;">${paymentBadge}</td>
                     <td style="color:var(--dk-ink-500); font-size:13px;">${dateFormatted} <span class="row-expand-arrow">🔽</span></td>
                     <td style="text-align:center;">
                         <div class="history-actions-cell">
                             ${paidAction}
-                            <button class="btn-history-setprice" onclick="setBillSellingPrice(${bill.id}, ${effectiveSelling}); event.stopPropagation();" title="Set the selling price charged to this customer">
-                                Set Price
-                            </button>
                             <button class="btn-history-download" onclick="downloadSingleHistoryPDF('${professionalInvoiceNum}', '${bill.customer_name.replace(/'/g, "\\'")}', ${JSON.stringify(itemsList).replace(/"/g, '&quot;')}, ${bill.grand_total}, ${bill.total_discount}, ${bill.total_taxable}, ${bill.total_payable}, '${bill.payment_status || 'UNPAID'}', ${paidAmount}, ${effectiveSelling}, '${new Date(bill.created_at).toISOString()}', ${paidAtIso ? `'${paidAtIso}'` : 'null'}); event.stopPropagation();">
                                 ↓ PDF
                             </button>
@@ -1211,7 +511,7 @@
 
             } catch (err) {
                 console.error(err);
-                alert("❌ Network Error. Ensure your backend Node server is running.");
+                await showAlert("Network error. Ensure your backend Node server is running.");
             }
         }
 
@@ -1369,12 +669,12 @@
         // --- SET THE SELLING PRICE CHARGED TO THE CUSTOMER FOR A SAVED INVOICE ---
         async function setBillSellingPrice(billId, currentEffective) {
             const promptDefault = currentEffective ? currentEffective.toFixed(2) : '';
-            const input = prompt('Enter the selling price charged to this customer:', promptDefault);
+            const input = await showPrompt('Enter the selling price charged to this customer:', promptDefault, 'number');
             if (input === null) return;
 
             const value = parseFloat(input);
             if (!Number.isFinite(value) || value <= 0) {
-                alert('Enter a valid selling price.');
+                await showAlert('Enter a valid selling price.');
                 return;
             }
 
@@ -1386,19 +686,19 @@
                 });
                 const result = await response.json();
                 if (!response.ok) {
-                    alert(`Unable to set price: ${result.error}`);
+                    await showAlert(`Unable to set price: ${result.error}`);
                     return;
                 }
                 await fetchSavedBills();
             } catch (err) {
                 console.error(err);
-                alert('Unable to connect. Please check that the billing server is running.');
+                await showAlert('Unable to connect. Please check that the billing server is running.');
             }
         }
 
         // --- FRONTEND ACTION TO DELETE A RECORD FROM THE MYSQL DATABASE ---
         async function deleteBillFromDatabase(billId, customerName, displayId) {
-            const confirmDelete = confirm(
+            const confirmDelete = await showConfirm(
                 `Are you sure you want to permanently delete the bill ${displayId} for "${customerName}" from the database?`
             );
 
@@ -1415,15 +715,17 @@
                 const result = await response.json();
 
                 if (response.ok) {
-                    alert(`✅ Record ${displayId} deleted successfully.`);
+                    // Refresh the list right away rather than waiting for the alert to be
+                    // dismissed, so it's already up to date by the time the user sees it again.
                     fetchSavedBills();
+                    await showAlert(`Record ${displayId} deleted successfully.`);
                 } else {
-                    alert(`❌ Database error: ${result.error}`);
+                    await showAlert(`Database error: ${result.error}`);
                 }
 
             } catch (err) {
                 console.error(err);
-                alert("❌ Connection Refused. Ensure your backend Node server is running.");
+                await showAlert("Connection refused. Ensure your backend Node server is running.");
             }
         }
 
@@ -1642,6 +944,8 @@
 
         // --- MANAGE PRODUCTS MODAL ---
 
+        let currentDetailProductId = null;
+
         function renderProductsModalList() {
             const rowsContainer = document.getElementById('productsListRows');
             const products = Object.values(productsById).sort((a, b) => a.name.localeCompare(b.name));
@@ -1650,26 +954,92 @@
                 rowsContainer.innerHTML = `<div class="product-card-empty">No products yet. Add one above.</div>`;
             } else {
                 rowsContainer.innerHTML = products.map(p => `
-                    <div class="product-card">
+                    <div class="product-card" data-search="${(p.sku + ' ' + p.name).toLowerCase()}" onclick="openProductDetail(${p.id})">
                         <div class="product-card-avatar" aria-hidden="true">${p.name.charAt(0).toUpperCase()}</div>
-                        <div class="product-card-fields">
-                            <label>SKU
-                                <input type="text" class="edit-product-sku" value="${p.sku}">
-                            </label>
-                            <label>Product Name
-                                <input type="text" class="edit-product-name" value="${p.name}">
-                            </label>
-                            <label>Cost Price (₹)
-                                <input type="number" class="edit-product-cost" value="${p.costPrice}" min="0" step="0.01">
-                            </label>
+                        <div class="product-card-summary-info">
+                            <strong>${p.name}</strong>
+                            <span>${p.sku} · ₹${p.costPrice}</span>
                         </div>
-                        <div class="product-card-actions">
-                            <button class="btn-save-invoice" onclick="updateProduct(${p.id}, this)">Save</button>
-                            <button class="btn-history-delete" onclick="deleteProduct(${p.id})">Delete</button>
+                        <div class="product-card-quick-actions">
+                            <button class="btn-edit-toggle" onclick="openProductDetail(${p.id}, true); event.stopPropagation();">Edit</button>
+                            <button class="btn-history-delete" onclick="deleteProduct(${p.id}); event.stopPropagation();">Delete</button>
                         </div>
                     </div>
                 `).join('');
             }
+
+            filterProductCards();
+        }
+
+        function filterProductCards() {
+            const query = (document.getElementById('productSearchInput')?.value || '').toLowerCase().trim();
+            document.querySelectorAll('#productsListRows .product-card').forEach(card => {
+                const matches = !query || card.dataset.search.includes(query);
+                card.style.display = matches ? '' : 'none';
+            });
+        }
+
+        // --- PRODUCT DETAIL POPUP (opened by clicking a card, instead of expanding it inline) ---
+        function openProductDetail(productId, startInEdit = false) {
+            const product = productsById[productId];
+            if (!product) return;
+            currentDetailProductId = productId;
+
+            document.getElementById('productDetailAvatar').textContent = product.name.charAt(0).toUpperCase();
+            document.getElementById('productDetailTitle').textContent = product.name;
+            document.getElementById('productDetailMeta').textContent = `${product.sku} · ₹${product.costPrice}`;
+
+            const skuInput = document.getElementById('productDetailSku');
+            const nameInput = document.getElementById('productDetailName');
+            const costInput = document.getElementById('productDetailCost');
+            skuInput.value = product.sku;
+            nameInput.value = product.name;
+            costInput.value = product.costPrice;
+            [skuInput, nameInput, costInput].forEach(input => input.disabled = !startInEdit);
+
+            document.getElementById('productDetailEditBtn').textContent = startInEdit ? 'Update' : 'Edit';
+
+            const modalEl = document.getElementById('productDetailModal');
+            modalEl.style.display = 'flex';
+            setTimeout(() => {
+                modalEl.classList.add('show');
+                if (startInEdit) skuInput.focus();
+            }, 10);
+        }
+
+        function closeProductDetailModal() {
+            const modalEl = document.getElementById('productDetailModal');
+            modalEl.classList.remove('show');
+            setTimeout(() => { modalEl.style.display = 'none'; }, 200);
+            currentDetailProductId = null;
+        }
+
+        async function toggleProductDetailEdit() {
+            const editBtn = document.getElementById('productDetailEditBtn');
+            const skuInput = document.getElementById('productDetailSku');
+            const nameInput = document.getElementById('productDetailName');
+            const costInput = document.getElementById('productDetailCost');
+
+            if (editBtn.textContent.trim() === 'Edit') {
+                [skuInput, nameInput, costInput].forEach(input => input.disabled = false);
+                editBtn.textContent = 'Update';
+                skuInput.focus();
+                return;
+            }
+
+            const success = await updateProduct(
+                currentDetailProductId,
+                skuInput.value.trim(),
+                nameInput.value.trim(),
+                parseFloat(costInput.value)
+            );
+            if (success) closeProductDetailModal();
+        }
+
+        async function deleteProductFromDetail() {
+            if (currentDetailProductId === null) return;
+            const success = await deleteProduct(currentDetailProductId);
+            if (success) closeProductDetailModal();
         }
 
         async function addProduct() {
@@ -1678,7 +1048,7 @@
             const costPrice = parseFloat(document.getElementById('newProductCost').value);
 
             if (!sku || !name || !Number.isFinite(costPrice)) {
-                alert('Please fill out SKU, name and cost price.');
+                await showAlert('Please fill out SKU, name and cost price.');
                 return;
             }
 
@@ -1690,7 +1060,7 @@
                 });
                 const result = await response.json();
                 if (!response.ok) {
-                    alert(`Unable to add product: ${result.error}`);
+                    await showAlert(`Unable to add product: ${result.error}`);
                     return;
                 }
 
@@ -1703,21 +1073,18 @@
 
                 const newKey = `${sku} - ${name}`;
                 activeTomSelects.forEach(ts => ts.addOption({ value: newKey, text: newKey }));
+
+                await showAlert(`"${name}" was added to the catalog.`);
             } catch (err) {
                 console.error(err);
-                alert('Unable to connect. Please check that the billing server is running.');
+                await showAlert('Unable to connect. Please check that the billing server is running.');
             }
         }
 
-        async function updateProduct(productId, buttonEl) {
-            const card = buttonEl.closest('.product-card');
-            const sku = card.querySelector('.edit-product-sku').value.trim();
-            const name = card.querySelector('.edit-product-name').value.trim();
-            const costPrice = parseFloat(card.querySelector('.edit-product-cost').value);
-
+        async function updateProduct(productId, sku, name, costPrice) {
             if (!sku || !name || !Number.isFinite(costPrice)) {
-                alert('Please fill out SKU, name and cost price.');
-                return;
+                await showAlert('Please fill out SKU, name and cost price.');
+                return false;
             }
 
             try {
@@ -1728,40 +1095,46 @@
                 });
                 const result = await response.json();
                 if (!response.ok) {
-                    alert(`Unable to update product: ${result.error}`);
-                    return;
+                    await showAlert(`Unable to update product: ${result.error}`);
+                    return false;
                 }
                 await loadProductCatalog();
                 renderProductsModalList();
+                return true;
             } catch (err) {
                 console.error(err);
-                alert('Unable to connect. Please check that the billing server is running.');
+                await showAlert('Unable to connect. Please check that the billing server is running.');
+                return false;
             }
         }
 
         async function deleteProduct(productId) {
-            if (!confirm('Delete this product? This cannot be undone.')) return;
+            if (!(await showConfirm('Delete this product? This cannot be undone.'))) return false;
 
             try {
                 const response = await fetch(`/api/products/${productId}?username=${encodeURIComponent(currentUser)}`, { method: 'DELETE' });
                 const result = await response.json();
                 if (!response.ok) {
-                    alert(`Unable to delete product: ${result.error}`);
-                    return;
+                    await showAlert(`Unable to delete product: ${result.error}`);
+                    return false;
                 }
                 await loadProductCatalog();
                 renderProductsModalList();
+                return true;
             } catch (err) {
                 console.error(err);
-                alert('Unable to connect. Please check that the billing server is running.');
+                await showAlert('Unable to connect. Please check that the billing server is running.');
+                return false;
             }
         }
 
-        function openProductsModal() {
+        async function openProductsModal() {
             if (!isAdmin) {
-                alert('Only admins can manage products.');
+                await showAlert('Only admins can manage products.');
                 return;
             }
+            const searchInput = document.getElementById('productSearchInput');
+            if (searchInput) searchInput.value = '';
             renderProductsModalList();
             const productsModalEl = document.getElementById('productsModal');
             productsModalEl.style.display = 'flex';
@@ -1776,7 +1149,3 @@
 
         addTrackBtn.addEventListener('click', addNewRow);
         loadProductCatalog().then(() => addNewRow());
-    </script>
-</body>
-
-</html>

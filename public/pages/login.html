@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Herbal Life Billing | Sign In</title>
+    <link rel="stylesheet" href="../styles/login.css">
+    <link rel="stylesheet" href="../styles/theme.css">
+</head>
+
+<body class="auth-page">
+
+    <div class="bg-aurora">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <div class="login-container">
+        <div class="auth-brand">
+            <span class="auth-brand-mark" aria-hidden="true">HL</span>
+            <span>Herbal Life</span>
+        </div>
+        <span class="auth-kicker">Sales workspace</span>
+        <h2>Welcome back</h2>
+        <p class="auth-subtitle">Sign in to create invoices and manage customer payments.</p>
+        <form id="loginForm">
+            <label for="username">Username</label>
+            <input type="text" id="username" placeholder="Username" required>
+            <label for="password">Password</label>
+            <input type="password" id="password" placeholder="Password" required>
+            <div class="btn-group">
+                <button type="submit" class="login-btn">Sign In</button>
+                <button type="button" class="register-btn" onclick="openRegisterModal()">Create Account</button>
+            </div>
+        </form>
+    </div>
+
+    <div id="registerModal" class="modal">
+        <div class="modal-content">
+            <span class="auth-kicker">New workspace access</span>
+            <h2>Create Account</h2>
+            <p class="auth-subtitle">Set up your billing account in a few seconds.</p>
+            <label for="regUsername">Username</label>
+            <input type="text" id="regUsername" placeholder="Username">
+            <label for="regPassword">Password</label>
+            <input type="password" id="regPassword" placeholder="Password">
+            <label for="regConfirmPassword">Confirm password</label>
+            <input type="password" id="regConfirmPassword" placeholder="Confirm Password">
+            <div class="modal-buttons">
+                <button class="create-btn" onclick="registerUser()">Create Account</button>
+                <button class="cancel-btn" onclick="closeRegisterModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="dialogModal" class="modal">
+        <div class="modal-content" style="max-width: 380px;">
+            <p id="dialogMessage" class="dialog-message"></p>
+            <span id="dialogError" class="dialog-error"></span>
+            <div class="dialog-actions">
+                <button type="button" id="dialogConfirmBtn" class="login-btn" onclick="dialogRespond(true)">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="../scripts/login.js"></script>
+</body>
+</html>

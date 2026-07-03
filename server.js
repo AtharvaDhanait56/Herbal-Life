@@ -10,6 +10,13 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
+// API responses must never be cached - without this, browsers can serve a stale
+// GET response (e.g. bills list right after a delete) instead of hitting the DB again.
+app.use('/api', (req, res, next) => {
+    res.set('Cache-Control', 'no-store');
+    next();
+});
+
 
 // Serve static frontend files automatically from the 'public' directory
 app.use(express.static(path.join(__dirname, 'public')));
@@ -450,7 +457,7 @@ app.post('/api/login', async (req, res) => {
 });
 
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.sendFile(path.join(__dirname, 'public', 'pages', 'index.html'));
 });
 
 app.listen(PORT, () => {

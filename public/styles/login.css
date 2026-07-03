@@ -1,0 +1,222 @@
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap');
+
+        /* Global Box-Sizing Reset */
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        /* Dynamic Cosmic Background */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0b0f19; /* Deep premium dark space */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* Changed from height to min-height for mobile keyboards */
+            margin: 0;
+            padding: 24px; /* Keeps the card from hitting screen edges on mobile */
+            overflow-x: hidden; /* Prevents background blobs from creating horizontal scrollbars */
+            overflow-y: auto; /* Allows scrolling if the mobile keyboard occupies space */
+            position: relative;
+        }
+
+        /* Animated Mesh Blobs */
+        .bg-aurora {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+            pointer-events: none; /* Ensures blobs don't interfere with clicks */
+        }
+
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.3;
+            mix-blend-mode: screen;
+            animation: floatAround 25s infinite alternate ease-in-out;
+        }
+
+        .blob-1 {
+            width: 400px;
+            height: 400px;
+            background: #3b82f6; /* Electric Blue */
+            top: -10%;
+            left: -10%;
+        }
+
+        .blob-2 {
+            width: 500px;
+            height: 500px;
+            background: #a855f7; /* Deep Purple */
+            bottom: -15%;
+            right: -10%;
+            animation-duration: 30s;
+            animation-delay: -5s;
+        }
+
+        .blob-3 {
+            width: 350px;
+            height: 350px;
+            background: #06b6d4; /* Vivid Cyan */
+            top: 30%;
+            left: 30%;
+            animation-duration: 20s;
+            animation-delay: -2s;
+        }
+
+        @keyframes floatAround {
+            0% { transform: translate(0, 0) scale(1) rotate(0deg); }
+            50% { transform: translate(50px, 40px) scale(1.1) rotate(180deg); }
+            100% { transform: translate(-30px, 80px) scale(0.9) rotate(360deg); }
+        }
+
+        /* Fluid Responsive Glassmorphic Cards */
+        .login-container, .modal-content {
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 35px 24px; /* Tighter padding optimized for mobile reading */
+            width: 100%; 
+            max-width: 360px; /* Scales dynamically on mobile, caps size on desktop */
+            border-radius: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.5);
+        }
+
+        .login-container {
+            animation: cardPop 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes cardPop {
+            from { opacity: 0; transform: translateY(20px) scale(0.97); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        h2 {
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 25px;
+            color: #ffffff;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        /* Input Fields */
+        input {
+            width: 100%;
+            padding: 14px 16px;
+            margin-bottom: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 12px;
+            transition: all 0.25s ease;
+            outline: none;
+            font-family: inherit;
+            color: #ffffff;
+            font-size: 15px; /* 15px+ prevents iOS Safari from forcing an unwanted zoom-in effect */
+        }
+
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        input:focus {
+            border-color: #3b82f6;
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+        }
+
+        /* Button Infrastructure */
+        .btn-group, .modal-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        button {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            font-family: inherit;
+        }
+
+        button:active { transform: scale(0.97); }
+
+        /* Button Variations */
+        .login-btn { background: #3b82f6; color: white; }
+        .login-btn:hover { background: #2563eb; box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3); }
+
+        .register-btn { 
+            background: rgba(255, 255, 255, 0.08); 
+            color: #f3f4f6; 
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .register-btn:hover { background: rgba(255, 255, 255, 0.15); }
+
+        .create-btn { background: #10b981; color: white; }
+        .create-btn:hover { background: #059669; box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3); }
+
+        .cancel-btn {
+            background: rgba(239, 68, 68, 0.12);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+        .cancel-btn:hover { background: rgba(239, 68, 68, 0.22); }
+
+        .dialog-message {
+            margin: 4px 0 18px;
+            color: #e0f5e8;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .dialog-input-wrap input { margin-bottom: 6px; }
+
+        .dialog-error {
+            display: none;
+            margin-bottom: 10px;
+            color: #f87171;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .dialog-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        /* Modal Overlay & Constraints */
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 100;
+            padding: 20px; /* Guardrails to prevent modal breaking on short mobile displays */
+        }
+
+        .modal-content {
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            max-height: 90vh; /* Safety threshold for tiny mobile devices */
+            overflow-y: auto; /* Activates inner scrolling if options spill out */
+        }
+
+        .modal.show { opacity: 1; }
+        .modal.show .modal-content { transform: scale(1); }
