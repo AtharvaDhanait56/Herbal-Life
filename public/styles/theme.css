@@ -421,7 +421,9 @@ select:focus-visible {
     border-radius: 14px;
     background: var(--dk-surface-1);
     box-shadow: var(--dk-shadow);
-    overflow: hidden;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
 }
 
 .app-shell table { font-size: 13px; }
@@ -934,6 +936,10 @@ select:focus-visible {
     align-items: center;
     gap: 16px;
     padding: 22px;
+    /* Grid items default to min-width: auto, which refuses to shrink below the
+       content's natural min-content size (here, the un-wrapped product name).
+       Without this, the card overflows its grid column instead of shrinking. */
+    min-width: 0;
     border: 1px solid var(--dk-line);
     border-radius: 18px;
     background: var(--dk-surface-1);
@@ -1215,9 +1221,16 @@ select:focus-visible {
     .app-shell .summary-row { margin-bottom: 10px; font-size: 12px; }
     .app-shell .summary-row.grand-final { margin-top: 10px; padding-top: 12px; font-size: 15px; }
     .app-shell .summary-row.grand-final .display-val { font-size: 17px; }
-    .app-shell #billsModal { padding: 0; }
-    .app-shell #billsModal .modal-content { width: 100% !important; max-height: 100vh !important; min-height: 100vh; padding: 17px 12px !important; border: 0; border-radius: 0 !important; }
-    .app-shell #billsModal h3 { padding-right: 38px; font-size: 21px !important; }
+    .app-shell #billsModal,
+    .app-shell #productsModal { padding: 0; }
+    .app-shell #billsModal .modal-content,
+    .app-shell #productsModal .modal-content { width: 100% !important; max-height: 100vh !important; min-height: 100vh; padding: 17px 12px !important; border: 0; border-radius: 0 !important; }
+    .app-shell #billsModal h3,
+    .app-shell #productsModal h3 { padding-right: 38px; font-size: 21px !important; }
+    .app-shell .product-card-grid { grid-template-columns: 1fr; }
+    .app-shell .product-card { flex-wrap: wrap; padding: 16px; }
+    .app-shell .product-card-summary-info { flex-basis: 0; min-width: 140px; }
+    .app-shell .product-card-quick-actions { flex-basis: 100%; justify-content: flex-end; margin-top: 8px; }
     .app-shell .history-subtitle { margin-bottom: 12px; font-size: 12px; }
     .app-shell .financial-overview { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-bottom: 12px; }
     .app-shell .finance-card { min-height: auto; padding: 11px 12px; border-radius: 11px; }
